@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aurelio · Android Developer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,600;1,300&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0f14;
+      --bg2: #13161e;
+      --bg3: #1a1e2a;
+      --surface: #1e2330;
+      --surface2: #252b3b;
+      --border: rgba(255,255,255,0.07);
+      --text: #e8eaf2;
+      --muted: #7a8099;
+      --accent: #7ec8a0;
+      --accent2: #a78cff;
+      --accent3: #ff8fa3;
+      --font-display: 'Fraunces', Georgia, serif;
+      --font-body: 'DM Sans', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-weight: 300;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.25rem 3rem;
+      backdrop-filter: blur(20px);
+      background: rgba(13,15,20,0.7);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-family: var(--font-display);
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--accent);
+      letter-spacing: -0.02em;
+    }
+    .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 400;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      position: relative;
+      padding: 6rem 3rem 4rem;
+      overflow: hidden;
+    }
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.18;
+      pointer-events: none;
+    }
+    .orb-1 { width:600px;height:600px;background:radial-gradient(circle,#7ec8a0,transparent 70%);top:-100px;left:-100px;animation:drift1 18s ease-in-out infinite; }
+    .orb-2 { width:500px;height:500px;background:radial-gradient(circle,#a78cff,transparent 70%);bottom:-100px;right:-100px;animation:drift2 22s ease-in-out infinite; }
+    .orb-3 { width:300px;height:300px;background:radial-gradient(circle,#ff8fa3,transparent 70%);top:50%;left:55%;animation:drift3 16s ease-in-out infinite; }
+    @keyframes drift1 { 0%,100%{transform:translate(0,0)}50%{transform:translate(60px,40px)} }
+    @keyframes drift2 { 0%,100%{transform:translate(0,0)}50%{transform:translate(-50px,-30px)} }
+    @keyframes drift3 { 0%,100%{transform:translate(0,0)}50%{transform:translate(30px,-50px)} }
+
+    .hero-content { text-align:center; position:relative; z-index:1; max-width:800px; }
+
+    .hero-badge {
+      display:inline-flex;align-items:center;gap:0.5rem;
+      background:rgba(126,200,160,0.1);border:1px solid rgba(126,200,160,0.25);
+      border-radius:100px;padding:0.4rem 1rem;font-size:0.78rem;color:var(--accent);
+      letter-spacing:0.06em;text-transform:uppercase;margin-bottom:2rem;
+      animation:fadeUp 0.8s ease both;
+    }
+    .hero-badge::before {
+      content:'';width:6px;height:6px;border-radius:50%;background:var(--accent);
+      animation:pulse 2s infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(1.3)} }
+
+    .hero h1 {
+      font-family:var(--font-display);font-size:clamp(3rem,8vw,6rem);
+      font-weight:300;line-height:1.05;letter-spacing:-0.03em;color:var(--text);
+      margin-bottom:1rem;animation:fadeUp 0.8s 0.1s ease both;
+    }
+    .hero h1 em { font-style:italic;color:var(--accent); }
+    .hero-sub {
+      font-size:1.15rem;color:var(--muted);max-width:520px;margin:0 auto 2.5rem;
+      font-weight:300;animation:fadeUp 0.8s 0.2s ease both;
+    }
+    .hero-ctas { display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;animation:fadeUp 0.8s 0.3s ease both; }
+
+    .btn-primary {
+      background:var(--accent);color:#0d1a12;padding:0.8rem 1.8rem;
+      border-radius:100px;font-weight:500;font-size:0.9rem;text-decoration:none;
+      transition:all 0.25s;border:none;cursor:pointer;font-family:var(--font-body);
+    }
+    .btn-primary:hover { background:#96d8b5;transform:translateY(-2px);box-shadow:0 8px 30px rgba(126,200,160,0.3); }
+    .btn-ghost {
+      background:transparent;color:var(--text);padding:0.8rem 1.8rem;
+      border-radius:100px;font-weight:400;font-size:0.9rem;text-decoration:none;
+      border:1px solid var(--border);transition:all 0.25s;cursor:pointer;
+    }
+    .btn-ghost:hover { border-color:rgba(255,255,255,0.2);background:var(--surface); }
+
+    .hero-scroll {
+      position:absolute;bottom:2.5rem;left:50%;transform:translateX(-50%);
+      display:flex;flex-direction:column;align-items:center;gap:0.5rem;
+      color:var(--muted);font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;
+      animation:fadeUp 1s 0.6s ease both;
+    }
+    .scroll-line { width:1px;height:40px;background:linear-gradient(to bottom,var(--muted),transparent);animation:scrollLine 2s ease-in-out infinite; }
+    @keyframes scrollLine { 0%,100%{transform:scaleY(1);opacity:1}50%{transform:scaleY(0.5);opacity:0.4} }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)} }
+
+    /* LAYOUT */
+    section { position:relative;z-index:1; }
+    .container { max-width:1100px;margin:0 auto;padding:0 3rem; }
+    .section-label { font-size:0.72rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin-bottom:0.75rem;font-weight:500; }
+    .section-title { font-family:var(--font-display);font-size:clamp(2rem,4vw,3.2rem);font-weight:300;letter-spacing:-0.02em;line-height:1.1;color:var(--text);margin-bottom:1rem; }
+    .section-title em { font-style:italic;color:var(--accent); }
+
+    /* ABOUT */
+    #about { padding:8rem 0; }
+    .about-grid { display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:center; }
+    .about-text p { color:var(--muted);margin-bottom:1.2rem;font-size:1.02rem;line-height:1.75; }
+    .skills-list { display:flex;flex-wrap:wrap;gap:0.6rem;margin-top:1.8rem; }
+    .skill-tag { background:var(--surface);border:1px solid var(--border);border-radius:100px;padding:0.35rem 0.9rem;font-size:0.8rem;color:var(--muted);transition:all 0.2s;cursor:default; }
+    .skill-tag:hover { border-color:var(--accent);color:var(--accent); }
+    .about-stats { display:grid;grid-template-columns:1fr 1fr;gap:1.5rem; }
+    .stat-card { background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.8rem;transition:all 0.3s; }
+    .stat-card:hover { border-color:rgba(126,200,160,0.3);transform:translateY(-3px);box-shadow:0 12px 40px rgba(0,0,0,0.3); }
+    .stat-number { font-family:var(--font-display);font-size:2.8rem;font-weight:300;color:var(--accent);line-height:1;margin-bottom:0.4rem; }
+    .stat-label { font-size:0.82rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em; }
+
+    /* APPS */
+    #apps { padding:8rem 0;background:linear-gradient(to bottom,transparent,var(--bg2),transparent); }
+    .apps-header { text-align:center;margin-bottom:5rem; }
+    .app-card {
+      background:var(--surface);border:1px solid var(--border);border-radius:28px;
+      overflow:hidden;margin-bottom:4rem;transition:all 0.4s;position:relative;
+    }
+    .app-card::before {
+      content:'';position:absolute;inset:0;border-radius:28px;padding:1px;
+      background:linear-gradient(135deg,rgba(126,200,160,0.3),transparent 50%);
+      -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+      -webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;
+    }
+    .app-card:hover { transform:translateY(-6px);box-shadow:0 24px 80px rgba(0,0,0,0.5),0 0 0 1px rgba(126,200,160,0.15); }
+    .app-card--purple::before { background:linear-gradient(135deg,rgba(167,140,255,0.3),transparent 50%); }
+    .app-card--purple:hover { box-shadow:0 24px 80px rgba(0,0,0,0.5),0 0 0 1px rgba(167,140,255,0.15); }
+
+    .app-inner { display:grid;grid-template-columns:1fr 1fr;min-height:520px; }
+    .app-inner--reversed { direction:rtl; }
+    .app-inner--reversed > * { direction:ltr; }
+
+    .app-info { padding:3.5rem;display:flex;flex-direction:column;justify-content:center; }
+    .app-icon { width:64px;height:64px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:2rem;margin-bottom:1.5rem;background:linear-gradient(135deg,#3a6b52,#7ec8a0);box-shadow:0 8px 24px rgba(126,200,160,0.3); }
+    .app-icon--purple { background:linear-gradient(135deg,#4a3a7a,#a78cff);box-shadow:0 8px 24px rgba(167,140,255,0.3); }
+    .app-category { font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:0.6rem;font-weight:500; }
+    .app-category--purple { color:var(--accent2); }
+    .app-name { font-family:var(--font-display);font-size:2.4rem;font-weight:300;letter-spacing:-0.02em;color:var(--text);margin-bottom:0.5rem; }
+    .app-tagline { font-size:1rem;color:var(--muted);margin-bottom:1.5rem;line-height:1.6; }
+    .feature-list { display:flex;flex-direction:column;gap:0.6rem;margin-bottom:2rem; }
+    .feature-item { display:flex;align-items:center;gap:0.65rem;font-size:0.875rem;color:var(--muted); }
+    .feature-dot { width:5px;height:5px;border-radius:50%;background:var(--accent);flex-shrink:0; }
+    .feature-dot--purple { background:var(--accent2); }
+    .app-badges { display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:2rem; }
+    .app-badge { background:rgba(126,200,160,0.1);border:1px solid rgba(126,200,160,0.2);border-radius:100px;padding:0.3rem 0.75rem;font-size:0.75rem;color:var(--accent);font-weight:500; }
+    .app-badge--purple { background:rgba(167,140,255,0.1);border-color:rgba(167,140,255,0.2);color:var(--accent2); }
+    .app-ctas { display:flex;gap:0.8rem;flex-wrap:wrap; }
+    .btn-store { display:inline-flex;align-items:center;gap:0.5rem;background:var(--bg3);border:1px solid var(--border);border-radius:100px;padding:0.6rem 1.2rem;font-size:0.82rem;color:var(--text);text-decoration:none;transition:all 0.2s;font-weight:400; }
+    .btn-store:hover { border-color:var(--accent);color:var(--accent); }
+    .btn-store--purple:hover { border-color:var(--accent2);color:var(--accent2); }
+
+    /* PHONE VISUAL */
+    .app-visual { background:linear-gradient(135deg,#0f2a1e 0%,#1a3d2a 50%,#0d1a12 100%);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center; }
+    .app-visual--purple { background:linear-gradient(135deg,#1a1030 0%,#2a1a4a 50%,#120d20 100%); }
+    .app-visual-glow { position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(126,200,160,0.2),transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%); }
+    .app-visual-glow--purple { background:radial-gradient(circle,rgba(167,140,255,0.2),transparent 70%); }
+
+    .phone-wrap { position:relative;z-index:1;display:flex;align-items:flex-end;gap:0; }
+    .phone-main { width:190px;animation:floatPhone 4s ease-in-out infinite;position:relative;z-index:2; }
+    .phone-side { width:155px;animation:floatPhone2 4s 0.8s ease-in-out infinite;opacity:0.55;transform:rotate(7deg) translateX(-20px) translateY(15px);position:relative;z-index:1; }
+    @keyframes floatPhone { 0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)} }
+    @keyframes floatPhone2 { 0%,100%{transform:rotate(7deg) translateX(-20px) translateY(15px)}50%{transform:rotate(7deg) translateX(-20px) translateY(3px)} }
+
+    .phone-frame { width:100%;background:#151520;border-radius:30px;border:2.5px solid rgba(255,255,255,0.1);overflow:hidden;box-shadow:0 40px 80px rgba(0,0,0,0.6),inset 0 1px 0 rgba(255,255,255,0.07);aspect-ratio:9/19.5;display:flex;flex-direction:column; }
+    .phone-notch { width:70px;height:20px;background:#0d0f14;border-radius:0 0 12px 12px;margin:0 auto;flex-shrink:0; }
+    .phone-screen { flex:1;padding:10px 9px;display:flex;flex-direction:column;gap:5px;background:#0f1a14;overflow:hidden; }
+    .phone-screen--purple { background:#120d20; }
+
+    /* Screen UI elements */
+    .s-greeting { font-size:5px;color:rgba(126,200,160,0.65);letter-spacing:0.08em;text-transform:uppercase; }
+    .s-title { font-size:9px;color:#e8eaf2;font-weight:600;line-height:1.2;margin-bottom:1px; }
+    .s-avatar { width:18px;height:18px;border-radius:50%;background:linear-gradient(135deg,#7ec8a0,#3a6b52);flex-shrink:0; }
+    .s-row { display:flex;align-items:center;justify-content:space-between; }
+    .s-mood { background:rgba(126,200,160,0.1);border:1px solid rgba(126,200,160,0.18);border-radius:9px;padding:7px;flex-shrink:0; }
+    .s-mood-label { font-size:4.5px;color:rgba(126,200,160,0.75);margin-bottom:3px;text-transform:uppercase;letter-spacing:0.05em; }
+    .s-mood-row { display:flex;gap:4px; }
+    .s-mini { flex:1;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:5px; }
+    .s-mini-icon { font-size:9px;margin-bottom:1px; }
+    .s-mini-label { font-size:4px;color:#7a8099;text-transform:uppercase;letter-spacing:0.04em; }
+    .s-mini-val { font-size:6px;color:#e8eaf2;font-weight:600; }
+    .s-section-label { font-size:5px;color:rgba(126,200,160,0.8);text-transform:uppercase;letter-spacing:0.08em;margin-top:2px; }
+    .s-task { display:flex;align-items:center;gap:5px;background:rgba(255,255,255,0.03);border-radius:7px;padding:4px 6px; }
+    .s-check { width:8px;height:8px;border-radius:50%;border:1.5px solid rgba(126,200,160,0.4);flex-shrink:0; }
+    .s-check-done { background:var(--accent);border-color:var(--accent); }
+    .s-task-text { font-size:4.5px;color:#7a8099; }
+    .s-bottom { display:flex;justify-content:space-around;padding:5px 0 2px;border-top:1px solid rgba(255,255,255,0.06);flex-shrink:0;margin-top:auto; }
+    .s-nav-icon { font-size:10px; }
+
+    /* App 2 screen */
+    .s2-title { font-size:8.5px;color:#a78cff;font-weight:600;margin-bottom:1px; }
+    .s2-sub { font-size:4px;color:#7a8099;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:5px; }
+    .s2-card { background:rgba(167,140,255,0.08);border:1px solid rgba(167,140,255,0.14);border-radius:9px;padding:7px;margin-bottom:4px; }
+    .s2-card-label { font-size:4.5px;color:rgba(167,140,255,0.85);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:3px; }
+    .s2-item { display:flex;align-items:center;gap:4px;margin-bottom:2px; }
+    .s2-dot { width:4px;height:4px;border-radius:50%;background:#a78cff;flex-shrink:0; }
+    .s2-text { font-size:4.5px;color:#9a9ab5; }
+    .s2-placeholder { background:rgba(167,140,255,0.05);border:1px dashed rgba(167,140,255,0.2);border-radius:9px;padding:10px;text-align:center; }
+
+    .screenshot-hint { position:absolute;bottom:1.2rem;left:50%;transform:translateX(-50%);font-size:0.72rem;color:var(--muted);letter-spacing:0.06em;white-space:nowrap;background:rgba(0,0,0,0.5);padding:0.3rem 0.8rem;border-radius:100px;border:1px solid var(--border); }
+
+    /* CONTACT */
+    #contact { padding:8rem 0; }
+    .contact-grid { display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:start; }
+    .contact-form { display:flex;flex-direction:column;gap:1rem; }
+    .form-group { display:flex;flex-direction:column;gap:0.4rem; }
+    .form-label { font-size:0.78rem;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase; }
+    .form-input,.form-textarea { background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0.85rem 1rem;color:var(--text);font-family:var(--font-body);font-size:0.9rem;font-weight:300;outline:none;transition:border-color 0.2s; }
+    .form-input:focus,.form-textarea:focus { border-color:rgba(126,200,160,0.4); }
+    .form-textarea { resize:vertical;min-height:120px; }
+    .contact-info { display:flex;flex-direction:column;gap:1.5rem;padding-top:2rem; }
+    .contact-link { display:flex;align-items:center;gap:1rem;text-decoration:none;color:var(--muted);transition:color 0.2s;font-size:0.95rem; }
+    .contact-link:hover { color:var(--text); }
+    .contact-icon { width:44px;height:44px;border-radius:12px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;transition:all 0.2s; }
+    .contact-link:hover .contact-icon { border-color:var(--accent);background:rgba(126,200,160,0.08); }
+
+    footer { border-top:1px solid var(--border);padding:2.5rem 3rem;display:flex;align-items:center;justify-content:space-between; }
+    .footer-logo { font-family:var(--font-display);font-size:1.1rem;color:var(--muted); }
+    .footer-copy { font-size:0.78rem;color:var(--muted); }
+    .divider { border:none;border-top:1px solid var(--border);margin:0; }
+
+    .reveal { opacity:0;transform:translateY(30px);transition:all 0.7s cubic-bezier(0.16,1,0.3,1); }
+    .reveal.visible { opacity:1;transform:translateY(0); }
+
+    @media (max-width:900px) {
+      nav { padding:1rem 1.5rem; }
+      .nav-links { gap:1.5rem; }
+      .container { padding:0 1.5rem; }
+      .about-grid,.contact-grid { grid-template-columns:1fr;gap:3rem; }
+      .app-inner { grid-template-columns:1fr; }
+      .app-inner--reversed { direction:ltr; }
+      .app-visual { min-height:320px; }
+      footer { flex-direction:column;gap:1rem;text-align:center; }
+    }
+    @media (max-width:600px) {
+      .nav-links { display:none; }
+      .about-stats { grid-template-columns:1fr 1fr; }
+      .phone-side { display:none; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">Aurelio</div>
+  <ul class="nav-links">
+    <li><a href="#about">Über mich</a></li>
+    <li><a href="#apps">Apps</a></li>
+    <li><a href="#contact">Kontakt</a></li>
+  </ul>
+</nav>
+
+<section class="hero">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+  <div class="hero-content">
+    <div class="hero-badge">Android Developer · Open for projects</div>
+    <h1>Crafting <em>thoughtful</em><br/>Android experiences</h1>
+    <p class="hero-sub">Ich entwickle moderne, durchdachte Android-Apps mit Kotlin &amp; Jetpack Compose — mit Fokus auf Design, Performance und echtem Nutzerwert.</p>
+    <div class="hero-ctas">
+      <a href="#apps" class="btn-primary">Apps ansehen</a>
+      <a href="#contact" class="btn-ghost">Kontakt aufnehmen</a>
+    </div>
+  </div>
+  <div class="hero-scroll">
+    <div class="scroll-line"></div>
+    Scroll
+  </div>
+</section>
+
+<hr class="divider" />
+
+<section id="about">
+  <div class="container">
+    <div class="about-grid">
+      <div class="about-text reveal">
+        <p class="section-label">Über mich</p>
+        <h2 class="section-title">Android-Entwickler mit <em>Passion</em> für Details</h2>
+        <p>Ich bin Aurelio, ein leidenschaftlicher Android-Entwickler mit Fokus auf moderne Architektur und polierte UI/UX. Meine Apps entstehen mit Kotlin, Jetpack Compose und einem klaren Designanspruch.</p>
+        <p>Von der ersten Idee bis zur Veröffentlichung im Play Store — ich begleite den gesamten Entwicklungsprozess und lege besonderen Wert auf Nutzererlebnis, saubere Codebasis und Performance.</p>
+        <div class="skills-list">
+          <span class="skill-tag">Kotlin</span>
+          <span class="skill-tag">Jetpack Compose</span>
+          <span class="skill-tag">Firebase</span>
+          <span class="skill-tag">MVVM</span>
+          <span class="skill-tag">Room DB</span>
+          <span class="skill-tag">AlarmManager</span>
+          <span class="skill-tag">Material 3</span>
+          <span class="skill-tag">Coroutines</span>
+          <span class="skill-tag">Hilt / DI</span>
+          <span class="skill-tag">AES-256</span>
+          <span class="skill-tag">Play Store</span>
+        </div>
+      </div>
+      <div class="about-stats reveal">
+        <div class="stat-card">
+          <div class="stat-number">2+</div>
+          <div class="stat-label">Apps im Play Store</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">100%</div>
+          <div class="stat-label">Kotlin · Compose</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">AES</div>
+          <div class="stat-label">256-bit Verschlüsselung</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">∞</div>
+          <div class="stat-label">Leidenschaft</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<section id="apps">
+  <div class="container">
+    <div class="apps-header reveal">
+      <p class="section-label">Meine Apps</p>
+      <h2 class="section-title">Projekte, auf die ich <em>stolz</em> bin</h2>
+    </div>
+
+    <!-- APP 1: CozyCare -->
+    <div class="app-card reveal">
+      <div class="app-inner">
+        <div class="app-info">
+          <div class="app-icon">🌿</div>
+          <p class="app-category">Wellness · Mental Health</p>
+          <h3 class="app-name">CozyCare</h3>
+          <p class="app-tagline">Dein persönlicher Wellness-Begleiter — alles, was du für dein mentales Wohlbefinden brauchst, sicher &amp; privat an einem Ort.</p>
+          <div class="feature-list">
+            <div class="feature-item"><div class="feature-dot"></div>Stimmungstagebuch, Dankbarkeitstagebuch &amp; Journal</div>
+            <div class="feature-item"><div class="feature-dot"></div>Tagesroutine mit Tasks &amp; Kalender</div>
+            <div class="feature-item"><div class="feature-dot"></div>Akut-Hilfe: Atemübungen &amp; Progressive Muskelentspannung</div>
+            <div class="feature-item"><div class="feature-dot"></div>Relax Sounds, Meditationen &amp; geführte Übungen</div>
+            <div class="feature-item"><div class="feature-dot"></div>6 individuell wählbare App-Farbthemen</div>
+            <div class="feature-item"><div class="feature-dot"></div>AES-256 Verschlüsselung — alle Daten lokal &amp; sicher</div>
+          </div>
+          <div class="app-badges">
+            <span class="app-badge">Android 8+</span>
+            <span class="app-badge">Kotlin</span>
+            <span class="app-badge">Compose</span>
+            <span class="app-badge">AES-256</span>
+            <span class="app-badge">Offline-First</span>
+          </div>
+          <div class="app-ctas">
+            <a href="#" class="btn-store">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              Play Store
+            </a>
+            <a href="#" class="btn-store">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+              GitHub
+            </a>
+          </div>
+        </div>
+
+        <div class="app-visual">
+          <div class="app-visual-glow"></div>
+          <div class="phone-wrap">
+            <!-- Side phone -->
+            <div class="phone-side">
+              <div class="phone-frame">
+                <div class="phone-notch"></div>
+                <div class="phone-screen">
+                  <div class="s-title" style="font-size:7px;">Dankbarkeit 🌸</div>
+                  <div style="background:rgba(126,200,160,0.08);border:1px solid rgba(126,200,160,0.15);border-radius:8px;padding:7px;font-size:4px;color:#7a8099;line-height:2.1;">
+                    ☀️ Den Sonnenschein heute<br/>🌿 Meine Gesundheit<br/>💙 Familie &amp; Freunde<br/>✨ Kleine Fortschritte
+                  </div>
+                  <div style="background:rgba(255,143,163,0.08);border:1px solid rgba(255,143,163,0.15);border-radius:8px;padding:7px;">
+                    <div style="font-size:4px;color:rgba(255,143,163,0.8);margin-bottom:3px;text-transform:uppercase;letter-spacing:.05em;">Relax Sound</div>
+                    <div style="display:flex;align-items:center;gap:5px;">
+                      <span style="font-size:11px;">🌧</span>
+                      <div><div style="font-size:4.5px;color:#e8eaf2;">Regengeräusche</div><div style="background:rgba(255,255,255,0.1);border-radius:100px;height:2.5px;width:50px;margin-top:2px;"><div style="background:#ff8fa3;width:40%;height:100%;border-radius:100px;"></div></div></div>
+                    </div>
+                  </div>
+                  <div class="s-bottom">
+                    <span class="s-nav-icon">📅</span>
+                    <span class="s-nav-icon">🏠</span>
+                    <span class="s-nav-icon">📝</span>
+                    <span class="s-nav-icon">🎵</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Main phone -->
+            <div class="phone-main">
+              <div class="phone-frame">
+                <div class="phone-notch"></div>
+                <div class="phone-screen">
+                  <div class="s-row" style="margin-bottom:3px;">
+                    <div><div class="s-greeting">Guten Morgen</div><div class="s-title">CozyCare 🌿</div></div>
+                    <div class="s-avatar"></div>
+                  </div>
+                  <div class="s-mood">
+                    <div class="s-mood-label">Wie fühlst du dich?</div>
+                    <div class="s-mood-row">
+                      <span style="font-size:10px;">😌</span>
+                      <span style="font-size:10px;">😊</span>
+                      <span style="font-size:12px;">😄</span>
+                      <span style="font-size:10px;">😔</span>
+                      <span style="font-size:10px;">😢</span>
+                    </div>
+                  </div>
+                  <div style="display:flex;gap:5px;">
+                    <div class="s-mini"><div class="s-mini-icon">🧘</div><div class="s-mini-label">Meditation</div><div class="s-mini-val">10 Min</div></div>
+                    <div class="s-mini"><div class="s-mini-icon">💨</div><div class="s-mini-label">Atemübung</div><div class="s-mini-val">4-7-8</div></div>
+                    <div class="s-mini"><div class="s-mini-icon">💪</div><div class="s-mini-label">PME</div><div class="s-mini-val">Akut</div></div>
+                  </div>
+                  <div class="s-section-label">Tagesroutine</div>
+                  <div class="s-task"><div class="s-check s-check-done"></div><div class="s-task-text">Morgenmeditation ✓</div></div>
+                  <div class="s-task"><div class="s-check s-check-done"></div><div class="s-task-text">Tagebuch schreiben ✓</div></div>
+                  <div class="s-task"><div class="s-check"></div><div class="s-task-text">Abendreflexion</div></div>
+                  <div class="s-bottom">
+                    <span class="s-nav-icon">🏠</span>
+                    <span class="s-nav-icon">📅</span>
+                    <span class="s-nav-icon">📝</span>
+                    <span class="s-nav-icon">⚙️</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <span class="screenshot-hint">💡 Ersetze mit echten Screenshots</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- APP 2: PLACEHOLDER -->
+    <div class="app-card app-card--purple reveal">
+      <div class="app-inner app-inner--reversed">
+        <div class="app-info">
+          <div class="app-icon app-icon--purple">✦</div>
+          <p class="app-category app-category--purple">Deine zweite App · Kategorie</p>
+          <h3 class="app-name">App Name</h3>
+          <p class="app-tagline">Hier kommt die Beschreibung deiner zweiten App. Ersetze diesen Text mit deinem echten App-Namen, Beschreibung und Features.</p>
+          <div class="feature-list">
+            <div class="feature-item"><div class="feature-dot feature-dot--purple"></div>Feature 1 — kurze Beschreibung</div>
+            <div class="feature-item"><div class="feature-dot feature-dot--purple"></div>Feature 2 — kurze Beschreibung</div>
+            <div class="feature-item"><div class="feature-dot feature-dot--purple"></div>Feature 3 — kurze Beschreibung</div>
+            <div class="feature-item"><div class="feature-dot feature-dot--purple"></div>Feature 4 — kurze Beschreibung</div>
+          </div>
+          <div class="app-badges">
+            <span class="app-badge app-badge--purple">Android</span>
+            <span class="app-badge app-badge--purple">Kotlin</span>
+            <span class="app-badge app-badge--purple">Compose</span>
+          </div>
+          <div class="app-ctas">
+            <a href="#" class="btn-store btn-store--purple">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              Play Store
+            </a>
+            <a href="#" class="btn-store btn-store--purple">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+              GitHub
+            </a>
+          </div>
+        </div>
+
+        <div class="app-visual app-visual--purple">
+          <div class="app-visual-glow app-visual-glow--purple"></div>
+          <div class="phone-wrap" style="justify-content:center;">
+            <div class="phone-main">
+              <div class="phone-frame">
+                <div class="phone-notch"></div>
+                <div class="phone-screen phone-screen--purple">
+                  <div class="s2-title">App Name ✦</div>
+                  <div class="s2-sub">Deine App Beschreibung</div>
+                  <div class="s2-card">
+                    <div class="s2-card-label">Feature Bereich 1</div>
+                    <div class="s2-item"><div class="s2-dot"></div><div class="s2-text">Feature Beschreibung hier einfügen</div></div>
+                    <div class="s2-item"><div class="s2-dot"></div><div class="s2-text">Noch ein tolles Feature</div></div>
+                  </div>
+                  <div class="s2-card">
+                    <div class="s2-card-label">Feature Bereich 2</div>
+                    <div class="s2-item"><div class="s2-dot"></div><div class="s2-text">Feature Beschreibung hier einfügen</div></div>
+                    <div class="s2-item"><div class="s2-dot"></div><div class="s2-text">Noch ein tolles Feature</div></div>
+                  </div>
+                  <div class="s2-placeholder">
+                    <div style="font-size:18px;margin-bottom:3px;">📱</div>
+                    <div style="font-size:4.5px;color:#7a8099;">Screenshot einfügen</div>
+                  </div>
+                  <div class="s-bottom" style="border-color:rgba(167,140,255,0.1);">
+                    <span class="s-nav-icon">🏠</span><span class="s-nav-icon">✦</span><span class="s-nav-icon">⚙️</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <span class="screenshot-hint">💡 Ersetze mit echten Screenshots</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<section id="contact">
+  <div class="container">
+    <div class="contact-grid">
+      <div class="reveal">
+        <p class="section-label">Kontakt</p>
+        <h2 class="section-title">Lass uns <em>zusammenarbeiten</em></h2>
+        <p style="color:var(--muted);margin-bottom:2.5rem;line-height:1.75;">Du hast ein Projekt, eine Idee oder Feedback zu meinen Apps? Ich freue mich über jede Nachricht.</p>
+        <div class="contact-info">
+          <a href="mailto:deine@email.de" class="contact-link">
+            <div class="contact-icon">✉</div>
+            deine@email.de
+          </a>
+          <a href="https://github.com/deinusername" target="_blank" class="contact-link">
+            <div class="contact-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+            </div>
+            github.com/deinusername
+          </a>
+          <a href="https://play.google.com/store" target="_blank" class="contact-link">
+            <div class="contact-icon">▶</div>
+            Google Play Store
+          </a>
+        </div>
+      </div>
+      <div class="reveal">
+        <form class="contact-form" onsubmit="handleSubmit(event)">
+          <div class="form-group">
+            <label class="form-label">Name</label>
+            <input type="text" class="form-input" placeholder="Dein Name" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">E-Mail</label>
+            <input type="email" class="form-input" placeholder="deine@email.de" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nachricht</label>
+            <textarea class="form-textarea" placeholder="Deine Nachricht…"></textarea>
+          </div>
+          <button type="submit" class="btn-primary" style="align-self:flex-start">Nachricht senden</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo">Aurelio</div>
+  <div class="footer-copy">© 2025 · Android Developer · Made with 🌿</div>
+</footer>
+
+<script>
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 80);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+  reveals.forEach(el => observer.observe(el));
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    const btn = e.target.querySelector('button');
+    btn.textContent = '✓ Gesendet!';
+    btn.style.background = '#3a6b52';
+    setTimeout(() => { btn.textContent = 'Nachricht senden'; btn.style.background = ''; }, 3000);
+  }
+</script>
+</body>
+</html>
