@@ -106,6 +106,12 @@
   .app-link{display:inline-flex;align-items:center;gap:6px;color:var(--accent);text-decoration:none;font-size:0.85rem;font-weight:500;transition:gap 0.2s}
   .app-link:hover{gap:10px}
 
+  /* Interactive Tabs Styling */
+  .app-tabs-nav{display:flex;gap:0.4rem;margin-top:1rem;justify-content:flex-start;flex-wrap:wrap}
+  .app-tab-btn{background:var(--surface2);border:1px solid var(--border);border-radius:100px;padding:0.35rem 0.8rem;font-size:0.72rem;color:var(--muted);font-family:'Space Grotesk',sans-serif;font-weight:600;cursor:pointer;transition:all 0.2s}
+  .app-tab-btn:hover{border-color:var(--muted);color:var(--text)}
+  .app-tab-btn.active{background:var(--accent);color:#000;border-color:var(--accent)}
+
   /* SpecialMinds mockup */
   .sm-header{background:#1a0a2e;padding:1rem;display:flex;justify-content:space-between;align-items:center}
   .sm-title{font-family:'Space Grotesk',sans-serif;font-size:0.9rem;font-weight:700;color:#c084fc}
@@ -286,8 +292,17 @@
   <div class="apps-grid">
 
     <div class="app-card">
-      <div class="app-mockup" style="padding: 0; background: transparent; aspect-ratio: auto;">
-        <img src="image.png" alt="SpecialMinds App Screenshot" style="width: 100%; height: auto; display: block;">
+      <div style="flex: 0 0 240px; min-width: 240px; display: flex; flex-direction: column;">
+        <div class="app-mockup" style="padding: 0; background: transparent; aspect-ratio: auto; flex: none; width: 100%;">
+          <img src="image.png" alt="SpecialMinds App Screenshot" class="app-screen-img" style="width: 100%; height: auto; display: block; border-radius: 24px; border: 1px solid var(--border);">
+        </div>
+        <div class="app-tabs-nav">
+          <button class="app-tab-btn active" data-img="image.png" data-desc="Eine Community-App für Neurodivergente — ADHS. Ein sicherer Ort für Austausch, Gedanken und gegenseitige Unterstützung. Mit mood-basierten Themes, Gedanken-Strom-Forum, verschlüsseltem Chat, Tauschbörse für Impulsiv-Einkäufe und anpassbaren Reiz-Reduzierungs-Modi. Aktuell im Beta Test.">Home</button>
+          <button class="app-tab-btn" data-img="specialminds_forum.png" data-desc="Das Gedanken-Strom-Forum bietet eine intuitive Struktur, um Gedanken ungefiltert zu teilen und sich mit Gleichgesinnten auszutauschen, ohne von komplexen Hierarchien oder Reizen überfordert zu werden.">Forum</button>
+          <button class="app-tab-btn" data-img="specialminds_tausch.png" data-desc="Die Tauschbörse für Impulsiv-Einkäufe: Ein humorvolles und nützliches Feature, um Fehlkäufe aus spontanen Hyperfokus-Impulsen unkompliziert innerhalb der Community anzubieten oder zu tauschen.">Tausch</button>
+          <button class="app-tab-btn" data-img="specialminds_chat.png" data-desc="Sicherer, Ende-zu-Ende verschlüsselter Echtzeit-Chat für den privaten Eins-zu-Eins-Austausch und tiefe, ungestörte Gespräche mit vertrauenswürdigen Community-Mitgliedern.">Chat</button>
+          <button class="app-tab-btn" data-img="specialminds_info.png" data-desc="Der Info-Bereich liefert reizreduzierte Aufklärung, wissenschaftlich fundierte Fakten, kuratierte Ressourcen und praktische Alltagstipps rund um das Leben mit Neurodiversität.">Info</button>
+        </div>
       </div>
       <div class="app-card-text">
         <div class="app-type">Flutter · Firebase · Android</div>
@@ -304,8 +319,16 @@
     </div>
 
     <div class="app-card reverse">
-      <div class="app-mockup" style="padding: 0; background: transparent; aspect-ratio: auto;">
-        <img src="cozycare.png" alt="CozyCare App Screenshot" style="width: 100%; height: auto; display: block;">
+      <div style="flex: 0 0 240px; min-width: 240px; display: flex; flex-direction: column;">
+        <div class="app-mockup" style="padding: 0; background: transparent; aspect-ratio: auto; flex: none; width: 100%;">
+          <img src="cozycare.png" alt="CozyCare App Screenshot" class="app-screen-img" style="width: 100%; height: auto; display: block; border-radius: 24px; border: 1px solid var(--border);">
+        </div>
+        <div class="app-tabs-nav">
+          <button class="app-tab-btn active" data-img="cozycare.png" data-desc="Wellness-App für tägliche Selbstfürsorge und Terminmanagement. Biometrische Absicherung, AES-256 verschlüsseltes Backup-System, 5 wählbare Themes, Mehrsprachigkeit (DE/EN) und smarte Erinnerungen via AlarmManager. Aktuell auf Google Play.">Home</button>
+          <button class="app-tab-btn" data-img="cozycare_kalender.png" data-desc="Der integrierte Kalender ermöglicht eine stressfreie Terminplanung mit Fokus auf dein Wohlbefinden. Smarte Erinnerungen via AlarmManager unterstützen dich sanft im strukturierten Alltag.">Kalender</button>
+          <button class="app-tab-btn" data-img="cozycare_stats.png" data-desc="Fortschritte im Blick behalten: Klare, visualisierte Auswertungen deiner täglichen Gewohnheiten, Stimmungen und Selbstfürsorge-Ziele helfen dir bei der langfristigen Routine-Entwicklung.">Statistik</button>
+          <button class="app-tab-btn" data-img="cozycare_settings.png" data-desc="Umfangreiche Anpassungsmöglichkeiten für deinen Schutz und Komfort: Konfiguriere die biometrische Fingerabdruck-Sperre, wechsle zwischen den 5 Themes oder schalte die Sprache um.">Optionen</button>
+        </div>
       </div>
       <div class="app-card-text">
         <div class="app-type">Kotlin · Jetpack Compose · Google Play</div>
@@ -323,8 +346,16 @@
     </div>
 
     <div class="app-card">
-      <div class="app-mockup" style="padding: 0; background: transparent; aspect-ratio: auto;">
-        <img src="topfgefluester.png" alt="Topfgeflüster App Screenshot" style="width: 100%; height: auto; display: block;">
+      <div style="flex: 0 0 240px; min-width: 240px; display: flex; flex-direction: column;">
+        <div class="app-mockup" style="padding: 0; background: transparent; aspect-ratio: auto; flex: none; width: 100%;">
+          <img src="topfgefluester.png" alt="Topfgeflüster App Screenshot" class="app-screen-img" style="width: 100%; height: auto; display: block; border-radius: 24px; border: 1px solid var(--border);">
+        </div>
+        <div class="app-tabs-nav">
+          <button class="app-tab-btn active" data-img="topfgefluester.png" data-desc="Community-Rezepteplattform, auf der Nutzer eigene Rezepte hochladen, teilen und entdecken. Foto-Uploads, Public/Private Sichtbarkeit und verschlüsselter Datenspeicher — das Netz voller Kochgeheimnisse. Eine App ohne Wertung.">Home</button>
+          <button class="app-tab-btn" data-img="topfgefluester_suche.png" data-desc="Intelligente Rezeptsuche: Durchsuche unkompliziert tausende kulinarische Kreationen oder filtere gezielt nach vorhandenen Zutaten und Unverträglichkeiten mithilfe der Spoonacular API.">Suche</button>
+          <button class="app-tab-btn" data-img="topfgefluester_add.png" data-desc="Rezepte erstellen leicht gemacht: Lade eigene Kreationen inklusive Foto-Uploads hoch und entscheide flexibel, ob du sie öffentlich mit der Community teilst oder rein privat abspeicherst.">Hinzufügen</button>
+          <button class="app-tab-btn" data-img="topfgefluester_profil.png" data-desc="Dein persönlicher, vollkommen verschlüsselter Datenspeicher für all deine Kochgeheimnisse, Notizen und Favoriten — absolut frei von öffentlichem Wertungsdruck oder Vergleichen.">Profil</button>
+        </div>
       </div>
       <div class="app-card-text">
         <div class="app-type">Kotlin · Jetpack Compose · Community</div>
@@ -430,6 +461,23 @@
         e.preventDefault();
         target.scrollIntoView({behavior:'smooth'});
       }
+    });
+  });
+
+  /* Tab Navigation Logic for App Mockups */
+  document.querySelectorAll('.app-card').forEach(function(card) {
+    const img = card.querySelector('.app-screen-img');
+    const desc = card.querySelector('.app-desc');
+    const buttons = card.querySelectorAll('.app-tab-btn');
+
+    buttons.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        buttons.forEach(function(b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        
+        if (img) img.src = btn.getAttribute('data-img');
+        if (desc) desc.textContent = btn.getAttribute('data-desc');
+      });
     });
   });
 </script>
