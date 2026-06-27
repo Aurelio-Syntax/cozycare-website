@@ -1,69 +1,696 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <title>CozyCare Portfolio</title>
-    <style>
-        body { margin: 0; background: #000; overflow-x: hidden; }
-        canvas { position: fixed; top: 0; left: 0; z-index: 10; pointer-events: none; }
-        .work-item { width: 40vw; height: 50vh; margin: 40vh auto; position: relative; opacity: 0; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>appscanfly</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Space+Grotesk:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:#fff}
+body{font-family:'Space Grotesk',sans-serif;color:#111}
+
+/* NAV */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:500;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:22px 48px;pointer-events:none;
+}
+.nav-logo{font-family:'JetBrains Mono',monospace;font-size:12px;
+  letter-spacing:.12em;color:#333;pointer-events:auto}
+.nav-links{display:flex;gap:28px;pointer-events:auto}
+.nav-links a{font-size:12px;color:#888;text-decoration:none;transition:color .2s}
+.nav-links a:hover{color:#111}
+
+/* STAGE */
+#stage{position:fixed;inset:0;background:#fff;overflow:hidden}
+
+/* PORTFOLIO — huge serif behind the cylinder */
+#bg-text{
+  position:absolute;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  font-family:'Playfair Display',serif;
+  font-size:clamp(80px,13vw,190px);
+  font-weight:900;
+  letter-spacing:-.04em;
+  color:#111;
+  white-space:nowrap;
+  pointer-events:none;
+  z-index:1;            /* behind canvas */
+  transition:opacity .8s;
+  user-select:none;
+}
+#bg-text.hide{opacity:0}
+
+/* credit top-center */
+#credit{
+  position:absolute;top:22px;left:50%;transform:translateX(-50%);
+  font-size:12px;color:#888;z-index:10;pointer-events:none;
+  white-space:nowrap;
+}
+
+/* THREE canvas */
+#c{
+  position:absolute;inset:0;z-index:2;
+  display:block;cursor:grab;
+  width:100%!important;height:100%!important;
+}
+#c:active{cursor:grabbing}
+
+/* hint */
+#hint{
+  position:absolute;bottom:28px;left:50%;transform:translateX(-50%);
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  letter-spacing:.14em;color:#aaa;text-transform:uppercase;
+  z-index:10;pointer-events:none;transition:opacity .5s;
+}
+
+/* SHARD canvas */
+#sc{position:fixed;inset:0;pointer-events:none;z-index:90}
+
+/* ── DETAIL ── */
+#detail{
+  position:fixed;inset:0;z-index:100;
+  background:#fff;overflow-y:auto;overflow-x:hidden;
+  opacity:0;pointer-events:none;
+  transition:opacity .5s ease;
+}
+#detail.open{opacity:1;pointer-events:auto}
+
+#dv-close{
+  position:fixed;top:22px;right:36px;z-index:300;
+  width:44px;height:44px;border:none;
+  background:rgba(0,0,0,.07);backdrop-filter:blur(12px);
+  border-radius:50%;cursor:pointer;font-size:17px;color:#333;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:opacity .4s .25s,background .2s;
+}
+#detail.open #dv-close{opacity:1}
+#dv-close:hover{background:rgba(0,0,0,.13)}
+
+/* Sticky giant title */
+.dv-sticky{
+  position:sticky;top:0;height:58vh;min-height:300px;
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;background:#fff;z-index:5;pointer-events:none;
+}
+#dv-title{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(52px,10vw,148px);
+  font-weight:900;letter-spacing:-.04em;
+  opacity:0;transform:scale(.25) translateY(24px);
+  transition:opacity .65s cubic-bezier(.22,1,.36,1),
+             transform .65s cubic-bezier(.22,1,.36,1);
+}
+#dv-title.show{opacity:1;transform:scale(1) translateY(0)}
+
+.dv-body{
+  position:relative;z-index:10;
+  padding:0 0 160px;margin-top:-10px;
+}
+.dv-intro{
+  max-width:580px;margin:0 auto 48px;padding:0 24px;
+  font-size:16px;color:#666;line-height:1.8;
+}
+.dv-col{display:flex;flex-direction:column;align-items:center;gap:24px}
+.dv-card{
+  width:min(640px,90vw);border-radius:18px;overflow:hidden;
+  box-shadow:0 18px 56px rgba(0,0,0,.09);
+  opacity:0;transform:translateY(50px);
+  transition:opacity .55s ease,transform .55s cubic-bezier(.22,1,.36,1);
+  will-change:transform,opacity;
+}
+.dv-card.in{opacity:1;transform:translateY(0)}
+.dv-visual{
+  width:100%;aspect-ratio:16/9;
+  display:flex;align-items:center;justify-content:center;
+  font-size:72px;position:relative;overflow:hidden;
+}
+.dv-sc-label{
+  position:absolute;bottom:12px;left:16px;
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  letter-spacing:.14em;text-transform:uppercase;opacity:.55;
+}
+.dv-body2{padding:22px 26px;background:#fff}
+.dv-eyebrow{font-family:'JetBrains Mono',monospace;font-size:10px;
+  letter-spacing:.15em;text-transform:uppercase;color:#bbb;margin-bottom:4px}
+.dv-cname{font-size:19px;font-weight:700;letter-spacing:-.01em;margin-bottom:6px}
+.dv-cdesc{font-size:13px;color:#777;line-height:1.65}
+.dv-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:11px}
+.dv-tag{font-size:10px;padding:3px 9px;border-radius:20px;
+  border:1px solid #e5e5e5;color:#aaa;font-family:'JetBrains Mono',monospace}
+.dv-btn{
+  display:inline-flex;align-items:center;gap:7px;
+  margin-top:14px;padding:11px 20px;border-radius:8px;
+  font-weight:600;font-size:13px;text-decoration:none;
+  transition:transform .2s,opacity .2s;
+}
+.dv-btn:hover{transform:translateY(-2px);opacity:.82}
+</style>
 </head>
 <body>
 
-    <div class="work-item" data-src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe"></div>
-    <div class="work-item" data-src="https://images.unsplash.com/photo-1556910103-1c02745aae4d"></div>
+<div id="stage">
+  <div id="bg-text">PORTFOLIO</div>
+  <canvas id="c"></canvas>
+  <div id="credit">appscanfly — Android Apps aus Deutschland</div>
+  <div id="hint">← ziehen · segment anklicken</div>
+</div>
 
-    <canvas id="app"></canvas>
+<canvas id="sc"></canvas>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    
-    <script>
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-        camera.position.z = 5;
-        const renderer = new THREE.WebGLRenderer({ canvas: document.querySelector('#app'), alpha: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
+<nav>
+  <span class="nav-logo">appscanfly</span>
+  <div class="nav-links">
+    <a href="#">Apps</a><a href="#">Über</a>
+    <a href="mailto:contact@appscanfly.de">Kontakt</a>
+  </div>
+</nav>
 
-        const loader = new THREE.TextureLoader();
-        const items = document.querySelectorAll('.work-item');
-        const meshStore = [];
+<div id="detail">
+  <button id="dv-close">✕</button>
+  <div class="dv-sticky"><div id="dv-title"></div></div>
+  <div class="dv-body" id="dv-body"></div>
+</div>
 
-        items.forEach(el => {
-            // Bilder sicher laden
-            loader.load(el.dataset.src, (tex) => {
-                const geo = new THREE.PlaneGeometry(1, 1, 32, 32);
-                const mat = new THREE.MeshBasicMaterial({ map: tex });
-                const mesh = new THREE.Mesh(geo, mat);
-                scene.add(mesh);
-                meshStore.push({ el, mesh });
-            });
-        });
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ════════════════════════════════════════════════
+// APP DATA
+// ════════════════════════════════════════════════
+const APPS = [
+  {
+    name:'SpecialMinds', emoji:'🧠', color:'#C97C5D',
+    light:'#FDF0EB', mid:'#EDCAB5',
+    sublabel:'Flutter · Firebase',
+    desc:'Sichere Community für neurodivergente Menschen. Themenräume, Gedanken-Strom, Audio-Memos, stimmungsbasierte Themes — zero Tracking, zero Ads.',
+    tags:['Flutter','Firebase','AES-256','DSGVO'], playUrl:'#',
+    screens:[
+      {l:'Dashboard',d:'Mood-basiertes Dashboard mit 4 Themes — Sand & Terrakotta, Nebel & Salbei, Dämmerung, Nachtmodus Mint.'},
+      {l:'Gedanken-Strom',d:'Forum-Feed mit Chat-Bubble-Cards, Herz-Reaktionen, Timeline-Connector. Anonym oder mit Profil.'},
+      {l:'Brain Dump & Audio',d:'Schnelle Gedankennotizen + Audio-Memos (.m4a, lokal) — kein Cloud-Upload.'},
+    ]
+  },
+  {
+    name:'CozyCare', emoji:'💜', color:'#9B8EC4',
+    light:'#F4F0FC', mid:'#C9C0E8',
+    sublabel:'Jetpack Compose',
+    desc:'Persönlicher Pflege- & Wellness-Planer. Biometrische Sperre, AES-256-GCM Backup, smarte Erinnerungen. Open Beta auf Google Play.',
+    tags:['Kotlin','Compose','AES-256-GCM','Open Beta'],
+    playUrl:'https://play.google.com/store/apps/details?id=com.appscanfly.cozycare',
+    screens:[
+      {l:'Kalender',d:'Monatskalender mit Erinnerungen pro Event — 1 Tag oder 1 Stunde vorher, AlarmManager-basiert.'},
+      {l:'6 Themes',d:'Sage Green, Rose, Himmelblau, Lavendel, Terrakotta, Mintgrün — alle handgepickt.'},
+      {l:'Backup',d:'PBKDF2 + AES-256-GCM, .cozybackup-Format. Re-encrypted via Android Keystore.'},
+    ]
+  },
+  {
+    name:'Topfgeflüster', emoji:'🍳', color:'#D4A843',
+    light:'#FDF8EC', mid:'#ECD898',
+    sublabel:'Jetpack Compose',
+    desc:'Community-Rezeptplattform — nur echte Rezepte echter Menschen. Foto-Upload, öffentlich/privat, dunkles Culinary-Design. Live auf Google Play.',
+    tags:['Kotlin','Firestore','Spoonacular','Live'],
+    playUrl:'https://play.google.com/store/apps/details?id=com.appscanfly.topfgefluester',
+    screens:[
+      {l:'Rezept-Feed',d:'Community-Feed mit Foto-Thumbnails, Kategorie-Filter, öffentlich/privat Toggle.'},
+      {l:'Editor',d:'Schritt-für-Schritt Editor mit Foto-Upload und Sichtbarkeitssteuerung.'},
+      {l:'Dark Culinary',d:'#0E0E0E Base, Amber-Gold #D4A843 Accent. Minimalistisch und appetitlich.'},
+    ]
+  }
+];
 
-        function render() {
-            meshStore.forEach(m => {
-                const rect = m.el.getBoundingClientRect();
-                // Korrekte Sync-Skalierung für GitHub Pages
-                const scaleX = rect.width * 0.01;
-                const scaleY = rect.height * 0.01;
-                m.mesh.scale.set(scaleX, scaleY, 1);
-                
-                m.mesh.position.set(
-                    (rect.left + rect.width/2 - window.innerWidth/2) * 0.01,
-                    -(rect.top + rect.height/2 - window.innerHeight/2) * 0.01,
-                    0
-                );
-            });
-            renderer.render(scene, camera);
-            requestAnimationFrame(render);
-        }
-        render();
+// ════════════════════════════════════════════════
+// PANORAMA TEXTURE — one seamless strip for the whole cylinder
+// Each app gets equal 1/3 of the width
+// ════════════════════════════════════════════════
+function makePanoramaTexture() {
+  const SEG = 3;
+  const TW = 3072;  // total width (3 × 1024)
+  const TH = 1024;
+  const SW = TW / SEG;
+  const cv = document.createElement('canvas');
+  cv.width = TW; cv.height = TH;
+  const c = cv.getContext('2d');
 
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-    </script>
+  APPS.forEach((app, i) => {
+    const x0 = i * SW;
+
+    // Background
+    const bg = c.createLinearGradient(x0, 0, x0, TH);
+    bg.addColorStop(0, app.light);
+    bg.addColorStop(1, '#ffffff');
+    c.fillStyle = bg;
+    c.fillRect(x0, 0, SW, TH);
+
+    // Top sheen
+    const sh = c.createLinearGradient(x0, 0, x0, TH * .38);
+    sh.addColorStop(0, 'rgba(255,255,255,.55)');
+    sh.addColorStop(1, 'rgba(255,255,255,0)');
+    c.fillStyle = sh;
+    c.fillRect(x0, 0, SW, TH * .38);
+
+    // Emoji — large, upper area
+    c.font = `${TH * .32}px serif`;
+    c.textAlign = 'center';
+    c.textBaseline = 'middle';
+    c.fillText(app.emoji, x0 + SW / 2, TH * .36);
+
+    // App name
+    c.font = `700 ${TH * .09}px 'Space Grotesk', sans-serif`;
+    c.fillStyle = app.color;
+    c.textAlign = 'center';
+    c.fillText(app.name, x0 + SW / 2, TH * .65);
+
+    // Sublabel
+    c.font = `400 ${TH * .042}px 'JetBrains Mono', monospace`;
+    c.fillStyle = '#bbbbbb';
+    c.fillText(app.sublabel.toUpperCase(), x0 + SW / 2, TH * .755);
+
+    // VIEW pill
+    const bw = 140, bh = 38;
+    const bx = x0 + SW / 2 - bw / 2;
+    const by = TH * .86 - bh / 2;
+    c.beginPath();
+    c.roundRect(bx, by, bw, bh, 19);
+    c.fillStyle = 'rgba(160,160,160,.28)';
+    c.fill();
+    c.font = `500 ${TH * .034}px 'Space Grotesk', sans-serif`;
+    c.fillStyle = 'rgba(80,80,80,.65)';
+    c.textAlign = 'center';
+    c.fillText('VIEW', x0 + SW / 2, TH * .86);
+
+    // Soft seam lines (very subtle)
+    if (i > 0) {
+      const sg = c.createLinearGradient(x0, 0, x0 + 12, 0);
+      sg.addColorStop(0, 'rgba(200,195,188,.45)');
+      sg.addColorStop(1, 'rgba(200,195,188,0)');
+      c.fillStyle = sg;
+      c.fillRect(x0, 0, 12, TH);
+    }
+  });
+
+  const tex = new THREE.CanvasTexture(cv);
+  tex.wrapS = THREE.ClampToEdgeWrapping;
+  tex.wrapT = THREE.ClampToEdgeWrapping;
+  return tex;
+}
+
+// ════════════════════════════════════════════════
+// THREE SETUP
+// ════════════════════════════════════════════════
+const canvas = document.getElementById('c');
+const W = () => window.innerWidth;
+const H = () => window.innerHeight;
+
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(W(), H());
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.08;
+
+const scene = new THREE.Scene();
+
+// ── Camera: very low angle, almost floor-level like Aikawa v2 ──
+const cam = new THREE.PerspectiveCamera(34, W() / H(), 0.1, 80);
+cam.position.set(0, 0.2, 5.2);
+cam.lookAt(0, 0.0, 0);
+
+window.addEventListener('resize', () => {
+  renderer.setSize(W(), H());
+  cam.aspect = W() / H();
+  cam.updateProjectionMatrix();
+});
+
+// ── Lights ──
+scene.add(new THREE.AmbientLight(0xffffff, 0.75));
+
+const sun = new THREE.DirectionalLight(0xfff5e8, 1.3);
+sun.position.set(3, 7, 5);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.camera.left = sun.shadow.camera.bottom = -6;
+sun.shadow.camera.right = sun.shadow.camera.top = 6;
+sun.shadow.camera.near = 0.5; sun.shadow.camera.far = 25;
+scene.add(sun);
+
+scene.add(Object.assign(new THREE.DirectionalLight(0xd8e8ff, 0.3), {
+  position: new THREE.Vector3(-4, 2, -3)
+}));
+
+// ── Env map ──
+(() => {
+  const pm = new THREE.PMREMGenerator(renderer);
+  pm.compileEquirectangularShader();
+  const ec = document.createElement('canvas');
+  ec.width = 512; ec.height = 256;
+  const ex = ec.getContext('2d');
+  const g = ex.createLinearGradient(0, 0, 0, 256);
+  g.addColorStop(0, '#b8ccec');
+  g.addColorStop(.45, '#e8e2d8');
+  g.addColorStop(1, '#f5f3ef');
+  ex.fillStyle = g; ex.fillRect(0, 0, 512, 256);
+  const sg = ex.createRadialGradient(370, 48, 0, 370, 48, 85);
+  sg.addColorStop(0, 'rgba(255,245,210,.9)');
+  sg.addColorStop(1, 'rgba(255,245,210,0)');
+  ex.fillStyle = sg; ex.fillRect(0, 0, 512, 256);
+  const t = new THREE.CanvasTexture(ec);
+  t.mapping = THREE.EquirectangularReflectionMapping;
+  scene.environment = pm.fromEquirectangular(t).texture;
+  t.dispose(); pm.dispose();
+})();
+
+// ════════════════════════════════════════════════
+// CYLINDER — one seamless mesh, wide & low
+// ════════════════════════════════════════════════
+const CYL_R = 2.1;
+const CYL_H = 1.5;
+const CYL_SEGS = 120; // smooth
+
+const cylGroup = new THREE.Group();
+scene.add(cylGroup);
+
+// Main cylinder body — open ended, texture outside
+const cylGeo = new THREE.CylinderGeometry(
+  CYL_R, CYL_R, CYL_H,
+  CYL_SEGS, 1,
+  true  // openEnded — caps separate
+);
+
+// Flip UVs so texture reads left to right when rotating
+const uvAttr = cylGeo.attributes.uv;
+const uvArr = uvAttr.array;
+for (let i = 0; i < uvArr.length; i += 2) { uvArr[i] = 1 - uvArr[i]; }
+uvAttr.needsUpdate = true;
+
+const panoTex = makePanoramaTexture();
+
+const cylMat = new THREE.MeshStandardMaterial({
+  map: panoTex,
+  roughness: 0.10,
+  metalness: 0.03,
+  envMapIntensity: 1.3,
+  side: THREE.FrontSide,
+});
+
+const cylMesh = new THREE.Mesh(cylGeo, cylMat);
+cylMesh.castShadow = true;
+cylGroup.add(cylMesh);
+
+// ── Caps ──
+const capGeo = new THREE.CylinderGeometry(CYL_R, CYL_R, 0.025, 128);
+const capMat = new THREE.MeshStandardMaterial({
+  color: 0xfafaf7,
+  roughness: 0.1,
+  metalness: 0.06,
+  envMapIntensity: 1.2,
+});
+const topCap = new THREE.Mesh(capGeo, capMat);
+topCap.position.y = CYL_H / 2 + 0.012;
+topCap.castShadow = true;
+cylGroup.add(topCap);
+const botCap = topCap.clone();
+botCap.position.y = -CYL_H / 2 - 0.012;
+cylGroup.add(botCap);
+
+// ── Fresnel-like gloss band ──
+const glGeo = new THREE.CylinderGeometry(
+  CYL_R + 0.003, CYL_R + 0.003,
+  CYL_H * 0.72,
+  128, 1, true, -0.25, 0.5
+);
+cylGroup.add(new THREE.Mesh(glGeo, new THREE.MeshBasicMaterial({
+  color: 0xffffff, transparent: true,
+  opacity: 0.10, side: THREE.BackSide, depthWrite: false
+})));
+
+// ════════════════════════════════════════════════
+// GROUND + MIRROR — glass floor
+// ════════════════════════════════════════════════
+const groundY = -CYL_H / 2 - 0.012 - 0.001;
+const gGeo = new THREE.PlaneGeometry(22, 22);
+
+// Matte ground
+scene.add(Object.assign(
+  new THREE.Mesh(gGeo, new THREE.MeshStandardMaterial({
+    color: 0xedece7, roughness: 0.06, metalness: 0
+  })),
+  { rotation: new THREE.Euler(-Math.PI / 2, 0, 0), position: new THREE.Vector3(0, groundY, 0) }
+));
+scene.children[scene.children.length-1].receiveShadow = true;
+
+// Mirror RT
+const mirRT = new THREE.WebGLRenderTarget(1024, 1024);
+const mirMesh = new THREE.Mesh(gGeo, new THREE.MeshBasicMaterial({
+  map: mirRT.texture, transparent: true, opacity: 0.32
+}));
+mirMesh.rotation.x = -Math.PI / 2;
+mirMesh.position.y = groundY - 0.002;
+scene.add(mirMesh);
+
+const mirCam = new THREE.PerspectiveCamera(34, 1, 0.1, 80);
+
+// Fade gradient over mirror
+(() => {
+  const fc = document.createElement('canvas');
+  fc.width = 4; fc.height = 512;
+  const fx = fc.getContext('2d');
+  const fg = fx.createLinearGradient(0, 0, 0, 512);
+  fg.addColorStop(0,   'rgba(255,255,255,0)');
+  fg.addColorStop(0.25,'rgba(255,255,255,.6)');
+  fg.addColorStop(0.55,'rgba(255,255,255,.92)');
+  fg.addColorStop(1,   'rgba(255,255,255,1)');
+  fx.fillStyle = fg; fx.fillRect(0, 0, 4, 512);
+  const fm = new THREE.Mesh(gGeo, new THREE.MeshBasicMaterial({
+    map: new THREE.CanvasTexture(fc), transparent: true, depthWrite: false
+  }));
+  fm.rotation.x = -Math.PI / 2;
+  fm.position.y = groundY + 0.004;
+  scene.add(fm);
+})();
+
+// ════════════════════════════════════════════════
+// HIT-DETECTION: which of the 3 app zones was clicked
+// Convert world hit angle → app index
+// ════════════════════════════════════════════════
+function angleToAppIdx(worldAngle, currentRotY) {
+  // localAngle is 0–2π on the cylinder surface
+  let local = ((worldAngle - currentRotY) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+  // Map to 0–N
+  const idx = Math.floor(local / (Math.PI * 2) * APPS.length);
+  return APPS.length - 1 - (idx % APPS.length); // texture is mirrored
+}
+
+// ════════════════════════════════════════════════
+// INTERACTION
+// ════════════════════════════════════════════════
+let rotY = 0, targetY = 0, autoSpin = true;
+let isDrag = false, dragX0 = 0, dragR0 = 0, dragDx = 0;
+const lerp = (a, b, t) => a + (b - a) * t;
+
+canvas.addEventListener('mousedown', e => {
+  isDrag = true; autoSpin = false;
+  dragX0 = e.clientX; dragR0 = targetY; dragDx = 0;
+});
+window.addEventListener('mousemove', e => {
+  if (!isDrag) return;
+  dragDx = e.clientX - dragX0;
+  targetY = dragR0 - dragDx * 0.007;
+});
+window.addEventListener('mouseup', () => { isDrag = false; });
+canvas.addEventListener('touchstart', e => {
+  isDrag = true; autoSpin = false;
+  dragX0 = e.touches[0].clientX; dragR0 = targetY; dragDx = 0;
+}, { passive: true });
+window.addEventListener('touchmove', e => {
+  if (!isDrag) return;
+  dragDx = e.touches[0].clientX - dragX0;
+  targetY = dragR0 - dragDx * 0.007;
+}, { passive: true });
+window.addEventListener('touchend', () => { isDrag = false; });
+(function spin() { requestAnimationFrame(spin); if (autoSpin) targetY += 0.003; })();
+
+// Raycasting
+const ray = new THREE.Raycaster();
+const mp = new THREE.Vector2();
+canvas.addEventListener('click', e => {
+  if (Math.abs(dragDx) > 8) return;
+  const r = canvas.getBoundingClientRect();
+  mp.x =  ((e.clientX - r.left) / r.width)  * 2 - 1;
+  mp.y = -((e.clientY - r.top)  / r.height) * 2 + 1;
+  ray.setFromCamera(mp, cam);
+  const hits = ray.intersectObject(cylMesh);
+  if (!hits.length) return;
+  // Get hit point angle on cylinder
+  const pt = hits[0].point;
+  const hitAngle = Math.atan2(pt.z, pt.x); // -π … π
+  const idx = angleToAppIdx(hitAngle, rotY);
+  triggerOpen(Math.max(0, Math.min(APPS.length - 1, idx)), e.clientX, e.clientY);
+});
+
+// ════════════════════════════════════════════════
+// SHATTER
+// ════════════════════════════════════════════════
+const sc = document.getElementById('sc');
+const shCtx = sc.getContext('2d');
+let shards = [];
+function resShard() { sc.width = window.innerWidth; sc.height = window.innerHeight; }
+resShard(); window.addEventListener('resize', resShard);
+
+function spawnShards(app, cx, cy) {
+  for (let i = 0; i < 40; i++) {
+    const a = Math.random() * Math.PI * 2;
+    const spd = 4 + Math.random() * 18;
+    const s = 14 + Math.random() * 110;
+    const n = 3 + Math.floor(Math.random() * 2);
+    const pts = Array.from({ length: n }, (_, v) => {
+      const ang = v / n * Math.PI * 2 + Math.random() * .9;
+      return { x: Math.cos(ang) * s * (.4 + Math.random() * .6), y: Math.sin(ang) * s * (.3 + Math.random() * .7) };
+    });
+    shards.push({
+      cx, cy, pts,
+      vx: Math.cos(a) * spd, vy: Math.sin(a) * spd - 5,
+      vr: (Math.random() - .5) * .18,
+      rot: Math.random() * Math.PI * 2,
+      life: 1, color: app.color, light: app.light,
+    });
+  }
+}
+
+function shardTick() {
+  shCtx.clearRect(0, 0, sc.width, sc.height);
+  shards = shards.filter(s => s.life > .005);
+  shards.forEach(s => {
+    s.cx += s.vx; s.cy += s.vy;
+    s.vy += 0.3; s.vx *= .95;
+    s.rot += s.vr; s.life *= 0.90;
+    shCtx.save();
+    shCtx.globalAlpha = s.life * .78;
+    shCtx.translate(s.cx, s.cy); shCtx.rotate(s.rot);
+    shCtx.beginPath();
+    shCtx.moveTo(s.pts[0].x, s.pts[0].y);
+    s.pts.slice(1).forEach(p => shCtx.lineTo(p.x, p.y));
+    shCtx.closePath();
+    const g = shCtx.createLinearGradient(-40, -40, 40, 40);
+    g.addColorStop(0, s.light + 'F0'); g.addColorStop(1, s.color + '99');
+    shCtx.fillStyle = g; shCtx.fill();
+    shCtx.strokeStyle = s.color + '66'; shCtx.lineWidth = 1; shCtx.stroke();
+    shCtx.restore();
+  });
+  requestAnimationFrame(shardTick);
+}
+shardTick();
+
+// ════════════════════════════════════════════════
+// DETAIL VIEW
+// ════════════════════════════════════════════════
+const detail = document.getElementById('detail');
+const dvTitle = document.getElementById('dv-title');
+const dvBody = document.getElementById('dv-body');
+const dvClose = document.getElementById('dv-close');
+const bgText = document.getElementById('bg-text');
+const hint = document.getElementById('hint');
+let detailOpen = false;
+
+const VBG = [['#EEE6FF','#D8CCFF'],['#FFF0EB','#FFD4BC'],['#EBFFF2','#C4F0D4']];
+
+function buildCards(app) {
+  dvBody.innerHTML = '';
+  const intro = document.createElement('p');
+  intro.className = 'dv-intro'; intro.textContent = app.desc;
+  dvBody.appendChild(intro);
+  const col = document.createElement('div'); col.className = 'dv-col';
+  app.screens.forEach((sc, i) => {
+    const card = document.createElement('div');
+    card.className = 'dv-card';
+    card.style.transitionDelay = `${i * .11}s`;
+    const [c0, c1] = VBG[i % VBG.length];
+    card.innerHTML = `
+      <div class="dv-visual" style="background:linear-gradient(135deg,${c0},${c1})">
+        <span>${app.emoji}</span>
+        <div class="dv-sc-label" style="color:${app.color}">${sc.l}</div>
+      </div>
+      <div class="dv-body2">
+        <div class="dv-eyebrow">${sc.l}</div>
+        <div class="dv-cname" style="color:${app.color}">${app.name}</div>
+        <div class="dv-cdesc">${sc.d}</div>
+        <div class="dv-tags">${app.tags.map(t => `<span class="dv-tag">${t}</span>`).join('')}</div>
+        ${i === app.screens.length - 1 ? `<a class="dv-btn" href="${app.playUrl}" target="_blank" style="background:${app.color};color:#fff">Auf Google Play →</a>` : ''}
+      </div>`;
+    col.appendChild(card);
+  });
+  dvBody.appendChild(col);
+}
+
+function triggerOpen(idx, cx, cy) {
+  if (detailOpen) return;
+  detailOpen = true;
+  const app = APPS[idx];
+  spawnShards(app, cx, cy);
+  buildCards(app);
+  dvTitle.textContent = app.name;
+  dvTitle.style.color = app.color;
+  bgText.classList.add('hide');
+  hint.style.opacity = '0';
+  setTimeout(() => {
+    detail.classList.add('open');
+    setTimeout(() => dvTitle.classList.add('show'), 60);
+    setTimeout(() => {
+      dvBody.querySelectorAll('.dv-card').forEach((c, i) => {
+        setTimeout(() => c.classList.add('in'), i * 120);
+      });
+    }, 340);
+  }, 30);
+}
+
+function closeDetail() {
+  if (!detailOpen) return;
+  detailOpen = false;
+  dvTitle.classList.remove('show');
+  bgText.classList.remove('hide');
+  hint.style.opacity = '1';
+  setTimeout(() => {
+    detail.classList.remove('open');
+    detail.scrollTop = 0;
+    dvBody.innerHTML = '';
+  }, 480);
+}
+dvClose.addEventListener('click', closeDetail);
+
+detail.addEventListener('scroll', () => {
+  const dH = detail.clientHeight;
+  detail.querySelectorAll('.dv-card.in').forEach(card => {
+    const top = card.getBoundingClientRect().top;
+    const p = Math.max(0, (dH * .48 - top) / dH);
+    card.style.transform = `translateY(${-p * p * 24}px) scale(${1 - p * .032})`;
+    card.style.opacity = String(Math.max(0, 1 - p * 1.5));
+  });
+});
+
+// ════════════════════════════════════════════════
+// RENDER LOOP
+// ════════════════════════════════════════════════
+function render() {
+  requestAnimationFrame(render);
+  rotY = lerp(rotY, targetY, .07);
+  cylGroup.rotation.y = rotY;
+
+  // Mirror reflection pass
+  mirMesh.visible = false;
+  mirCam.copy(cam);
+  mirCam.position.y = 2 * groundY - cam.position.y;
+  mirCam.lookAt(0, groundY, 0);
+  mirCam.aspect = 1; mirCam.updateProjectionMatrix();
+  renderer.setRenderTarget(mirRT);
+  renderer.render(scene, mirCam);
+  renderer.setRenderTarget(null);
+  mirMesh.visible = true;
+
+  renderer.render(scene, cam);
+}
+render();
+</script>
 </body>
 </html>
