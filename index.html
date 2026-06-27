@@ -1,485 +1,70 @@
 <!DOCTYPE html>
 <html lang="de">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Aurelio – Junior App Developer</title>
-<meta name="description" content="Fachinformatiker & Solo App Developer. Flutter, Kotlin, Jetpack Compose. AES-256 Verschlüsselung, 100% datenschutzkonform, keine Werbung.">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<style>
-  *{margin:0;padding:0;box-sizing:border-box}
-  :root{
-    --bg:#0A0B0D;
-    --surface:#111318;
-    --surface2:#1A1D24;
-    --border:#222530;
-    --text:#F0F2F7;
-    --muted:#6B7280;
-    --accent:#00D9FF;
-    --accent2:#7B61FF;
-    --green:#00FF88;
-  }
-  html{scroll-behavior:smooth}
-  body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;overflow-x:hidden}
 
-  /* NAV */
-  nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(10,11,13,0.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:60px}
-  .nav-logo{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1.1rem;letter-spacing:-0.02em}
-  .nav-logo span{color:var(--accent)}
-  .nav-links{display:flex;gap:2rem}
-  .nav-links a{color:var(--muted);text-decoration:none;font-size:0.85rem;font-weight:500;letter-spacing:0.04em;text-transform:uppercase;transition:color 0.2s}
-  .nav-links a:hover{color:var(--text)}
-  .nav-cta{background:var(--accent);color:#000;padding:0.45rem 1.1rem;border-radius:6px;text-decoration:none;font-size:0.82rem;font-weight:600;font-family:'Space Grotesk',sans-serif;letter-spacing:0.02em;transition:opacity 0.2s}
-  .nav-cta:hover{opacity:0.85}
+    <meta charset="UTF-8">
 
-  /* HERO */
-  .hero-wrapper{max-width:1100px;margin:0 auto;padding:0 2rem}
-  .hero{min-height:100vh;display:flex;align-items:center;padding:80px 0 4rem;gap:3rem;flex-wrap:wrap}
-  .hero-left{flex:1;min-width:280px}
-  .hero-tag{display:inline-flex;align-items:center;gap:8px;background:rgba(0,217,255,0.08);border:1px solid rgba(0,217,255,0.2);border-radius:100px;padding:0.35rem 0.9rem;margin-bottom:1.5rem}
-  .hero-tag-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite}
-  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(0.85)}}
-  .hero-tag span{font-size:0.78rem;color:var(--accent);font-family:'JetBrains Mono',monospace;letter-spacing:0.06em}
-  h1{font-family:'Space Grotesk',sans-serif;font-size:clamp(2.8rem,5vw,4.2rem);font-weight:700;line-height:1.05;letter-spacing:-0.03em;margin-bottom:1.2rem}
-  h1 .dim{color:var(--muted)}
-  .hero-sub{font-size:1.05rem;color:var(--muted);line-height:1.7;max-width:480px;margin-bottom:2.2rem}
-  .hero-actions{display:flex;gap:1rem;flex-wrap:wrap}
-  .btn-primary{background:var(--accent);color:#000;padding:0.75rem 1.6rem;border-radius:8px;text-decoration:none;font-weight:600;font-size:0.9rem;font-family:'Space Grotesk',sans-serif;transition:all 0.2s;display:inline-block}
-  .btn-primary:hover{opacity:0.85;transform:translateY(-1px)}
-  .btn-secondary{border:1px solid var(--border);color:var(--text);padding:0.75rem 1.6rem;border-radius:8px;text-decoration:none;font-weight:500;font-size:0.9rem;transition:all 0.2s;display:inline-block}
-  .btn-secondary:hover{border-color:var(--muted);transform:translateY(-1px)}
-  .hero-right{flex:0 0 360px;min-width:280px}
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
 
-  /* ENCRYPT BOX */
-  .encrypt-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.5rem;position:relative;overflow:hidden}
-  .encrypt-box::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent)}
-  .eb-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
-  .eb-title{font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--accent);letter-spacing:0.1em;text-transform:uppercase}
-  .eb-badge{background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.2);border-radius:100px;padding:0.2rem 0.6rem;font-size:0.68rem;color:var(--green);font-family:'JetBrains Mono',monospace}
-  .cipher-lines{display:flex;flex-direction:column;gap:6px;margin-bottom:1rem}
-  .cipher-line{font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:var(--muted);opacity:0.6;letter-spacing:0.05em;white-space:nowrap;overflow:hidden;transition:color 0.3s,opacity 0.3s}
-  .cipher-line.active{color:var(--accent);opacity:1}
-  .eb-divider{height:1px;background:var(--border);margin:1rem 0}
-  .eb-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem}
-  .eb-label{font-size:0.75rem;color:var(--muted)}
-  .eb-value{font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--text)}
-  .eb-value.green{color:var(--green)}
-  .eb-value.cyan{color:var(--accent)}
+    <title>appscanfly</title>
 
-  /* STATS */
-  .stats-bar{border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--surface);padding:2rem;display:flex;gap:0;justify-content:center;flex-wrap:wrap}
-  .stat-item{flex:1;min-width:160px;text-align:center;padding:1rem 2rem;border-right:1px solid var(--border)}
-  .stat-item:last-child{border-right:none}
-  .stat-num{font-family:'Space Grotesk',sans-serif;font-size:2rem;font-weight:700;letter-spacing:-0.02em}
-  .stat-num.c{color:var(--accent)}
-  .stat-label{font-size:0.78rem;color:var(--muted);margin-top:0.25rem;text-transform:uppercase;letter-spacing:0.06em}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
 
-  /* SECTIONS */
-  section{max-width:1100px;margin:0 auto;padding:5rem 2rem}
-  .section-tag{font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--accent);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.75rem}
-  h2{font-family:'Space Grotesk',sans-serif;font-size:clamp(1.8rem,3vw,2.5rem);font-weight:700;letter-spacing:-0.02em;margin-bottom:1rem}
-  .section-desc{color:var(--muted);max-width:500px;line-height:1.7;margin-bottom:3rem}
+    <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin>
 
-  /* SECURITY */
-  .security-section{background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
-  .security-inner{max-width:1100px;margin:0 auto;padding:4rem 2rem}
-  .security-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.5rem;margin-top:2.5rem}
-  .sec-card{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:1.5rem;transition:border-color 0.3s}
-  .sec-card:hover{border-color:rgba(0,217,255,0.3)}
-  .sec-icon{width:40px;height:40px;border-radius:10px;background:rgba(0,217,255,0.08);border:1px solid rgba(0,217,255,0.15);display:flex;align-items:center;justify-content:center;margin-bottom:1rem;font-size:1.1rem}
-  .sec-card h3{font-family:'Space Grotesk',sans-serif;font-size:0.95rem;font-weight:600;margin-bottom:0.5rem}
-  .sec-card p{font-size:0.82rem;color:var(--muted);line-height:1.6}
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
 
-  /* APPS */
-  .apps-grid{display:flex;flex-direction:column;gap:4rem}
-  .app-card{display:flex;gap:3rem;align-items:center;flex-wrap:wrap}
-  .app-card.reverse{flex-direction:row-reverse}
-  @media(max-width:700px){.app-card.reverse{flex-direction:row}}
-  .app-mockup{flex:0 0 240px;aspect-ratio:9/16;background:var(--surface);border:1px solid var(--border);border-radius:24px;overflow:hidden;display:flex;flex-direction:column}
-  .app-card-text{flex:1;min-width:260px}
-  .app-card-text h3{font-family:'Space Grotesk',sans-serif;font-size:1.6rem;font-weight:700;letter-spacing:-0.02em;margin-bottom:0.5rem}
-  .app-type{font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--accent);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:0.75rem}
-  .app-desc{color:var(--muted);line-height:1.7;margin-bottom:1.5rem;font-size:0.95rem}
-  .app-tags{display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1.5rem}
-  .tag{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:0.3rem 0.75rem;font-size:0.75rem;color:var(--muted);font-family:'JetBrains Mono',monospace}
-  .tag.accent{border-color:rgba(0,217,255,0.25);color:var(--accent);background:rgba(0,217,255,0.06)}
-  .app-link{display:inline-flex;align-items:center;gap:6px;color:var(--accent);text-decoration:none;font-size:0.85rem;font-weight:500;transition:gap 0.2s}
-  .app-link:hover{gap:10px}
-
-  /* Interactive Tabs Styling */
-  .app-tabs-nav{display:flex;gap:0.4rem;margin-top:1rem;justify-content:flex-start;flex-wrap:wrap}
-  .app-tab-btn{background:var(--surface2);border:1px solid var(--border);border-radius:100px;padding:0.35rem 0.8rem;font-size:0.72rem;color:var(--muted);font-family:'Space Grotesk',sans-serif;font-weight:600;cursor:pointer;transition:all 0.2s}
-  .app-tab-btn:hover{border-color:var(--muted);color:var(--text)}
-  .app-tab-btn.active{background:var(--accent);color:#000;border-color:var(--accent)}
-
-  /* SpecialMinds mockup */
-  .sm-header{background:#1a0a2e;padding:1rem;display:flex;justify-content:space-between;align-items:center}
-  .sm-title{font-family:'Space Grotesk',sans-serif;font-size:0.9rem;font-weight:700;color:#c084fc}
-  .sm-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#c084fc)}
-  .sm-feed{flex:1;padding:0.75rem;display:flex;flex-direction:column;gap:8px;overflow:hidden;background:#0d0720}
-  .sm-post{background:#1a0a2e;border-radius:10px;padding:0.65rem;border-left:2px solid #7c3aed}
-  .sm-post-bar{height:7px;border-radius:3px;background:#2d1b4e;margin-bottom:5px}
-  .sm-pill-nav{background:#100720;padding:0.6rem 0.75rem;display:flex;justify-content:space-around}
-  .sm-pill{background:#1a0a2e;border-radius:100px;padding:0.3rem 0.75rem;font-size:0.6rem;color:#7c3aed;font-family:'Space Grotesk',sans-serif;font-weight:600}
-  .sm-pill.active{background:#7c3aed;color:#fff}
-
-  /* CozyCare mockup */
-  .cc-header{background:#1a2820;padding:1rem;display:flex;justify-content:space-between;align-items:center}
-  .cc-title{font-family:'Space Grotesk',sans-serif;font-size:0.9rem;font-weight:700;color:#4ade80}
-  .cc-body{flex:1;padding:0.75rem;display:flex;flex-direction:column;gap:8px;background:#0d1710}
-  .cc-event{background:#1a2820;border-radius:8px;padding:0.6rem;display:flex;gap:8px;align-items:center}
-  .cc-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-  .cc-event-lines{flex:1;display:flex;flex-direction:column;gap:4px}
-  .cc-line{height:6px;border-radius:3px;background:#243324}
-  .cc-encrypt-banner{margin:0 0.75rem;background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.2);border-radius:6px;padding:0.4rem 0.6rem;display:flex;align-items:center;gap:6px}
-  .cc-enc-dot{width:5px;height:5px;border-radius:50%;background:#4ade80}
-  .cc-enc-text{font-size:0.58rem;color:#4ade80;font-family:'JetBrains Mono',monospace;letter-spacing:0.04em}
-  .cc-bottom{background:#111a13;padding:0.6rem 0.75rem;display:flex;justify-content:space-around}
-
-  /* Topfgeflüster mockup */
-  .rz-header{background:#1a0f08;padding:1rem;display:flex;justify-content:space-between;align-items:center}
-  .rz-title{font-family:'Space Grotesk',sans-serif;font-size:0.9rem;font-weight:700;color:#f97316}
-  .rz-body{flex:1;padding:0.75rem;display:flex;flex-direction:column;gap:8px;overflow:hidden;background:#0d0804}
-  .rz-card{background:#1a0f08;border-radius:10px;overflow:hidden}
-  .rz-img{height:55px}
-  .rz-info{padding:0.5rem;display:flex;flex-direction:column;gap:4px}
-  .rz-bar{height:6px;border-radius:3px;background:#2d1a0a}
-  .rz-bottom{background:#110b05;padding:0.6rem 0.75rem;display:flex;justify-content:space-around}
-
-  /* ABOUT */
-  .about-section-bg{background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
-  .about-grid{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center}
-  @media(max-width:700px){.about-grid{grid-template-columns:1fr}}
-  .about-photo{background:var(--bg);border:1px solid var(--border);border-radius:20px;aspect-ratio:3/4;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.75rem;color:var(--muted);position:relative;overflow:hidden}
-
-  /* WENN du ein echtes Foto hast: ersetze den Platzhalter-Block unten durch:
-     <img src="dein-foto.jpg" alt="Aurelio" style="width:100%;height:100%;object-fit:cover;border-radius:20px"> */
-
-  .about-photo-icon{font-size:3.5rem;opacity:0.25}
-  .about-photo-hint{font-size:0.75rem;color:var(--muted);opacity:0.4;font-family:'JetBrains Mono',monospace;text-align:center;padding:0 1rem}
-  .skills-list{display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:1.5rem}
-
-  /* CONTACT */
-  .contact-section{background:var(--surface);border-top:1px solid var(--border)}
-  .contact-inner{max-width:1100px;margin:0 auto;padding:4rem 2rem;display:flex;justify-content:space-between;align-items:center;gap:2rem;flex-wrap:wrap}
-  .contact-left h2{margin-bottom:0.5rem;font-size:1.8rem}
-  .contact-left p{color:var(--muted);font-size:0.9rem}
-  .contact-links{display:flex;gap:1rem;flex-wrap:wrap}
-  .contact-btn{display:inline-flex;align-items:center;gap:8px;padding:0.7rem 1.3rem;border-radius:8px;text-decoration:none;font-size:0.85rem;font-weight:500;font-family:'Space Grotesk',sans-serif;transition:all 0.2s}
-  .contact-btn.primary{background:var(--accent);color:#000}
-  .contact-btn.secondary{border:1px solid var(--border);color:var(--text)}
-  .contact-btn:hover{transform:translateY(-1px);opacity:0.9}
-
-  footer{text-align:center;padding:2rem;border-top:1px solid var(--border);color:var(--muted);font-size:0.78rem;font-family:'JetBrains Mono',monospace;line-height:1.8}
-
-  @media(max-width:900px){
-    .nav-links{display:none}
-    .hero{flex-direction:column;padding-top:100px}
-    .hero-right{flex:unset;width:100%}
-    .stat-item{border-right:none;border-bottom:1px solid var(--border)}
-    .stat-item:last-child{border-bottom:none}
-  }
-  @media(max-width:600px){
-    nav{padding:0 1rem}
-    section{padding:3rem 1rem}
-    .security-inner,.contact-inner{padding:3rem 1rem}
-  }
-</style>
 </head>
+
 <body>
 
-<nav>
-  <div class="nav-logo">AppsCanFly<span>.</span>dev</div>
-  <div class="nav-links">
-    <a href="#apps">Apps</a>
-    <a href="#security">Security</a>
-    <a href="#about">Über mich</a>
-  </div>
-  <a href="#contact" class="nav-cta">Kontakt</a>
-</nav>
+    <div id="ui">
 
-<div class="hero-wrapper">
-  <div class="hero">
-    <div class="hero-left">
-      <div class="hero-tag">
-        <div class="hero-tag-dot"></div>
-        <span>Fachinformatiker · Junior App Developer</span>
-      </div>
-      <h1>Apps, die<br><span class="dim">einfach</span><br>funktionieren.</h1>
-      <p class="hero-sub">Solo-Entwickler für Android. Ich baue Apps mit echtem Mehrwert — durchdacht, datenschutzkonform und mit militärischer Verschlüsselung.</p>
-      <div class="hero-actions">
-        <a href="#apps" class="btn-primary">Meine Apps</a>
-        <a href="#about" class="btn-secondary">Über mich</a>
-      </div>
-    </div>
-    <div class="hero-right">
-      <div class="encrypt-box">
-        <div class="eb-header">
-          <span class="eb-title">AES-256 · Live Cipher</span>
-          <span class="eb-badge">● aktiv</span>
-        </div>
-        <div class="cipher-lines" id="cipherLines">
-          <div class="cipher-line">3a7f2d91 c4b8e056 f19a3d72 c8b4e091</div>
-          <div class="cipher-line">f8c3a145 d72e9b06 c4f1a28d 5e73b190</div>
-          <div class="cipher-line active">b5e920f4 c73a1d86 e4b0293f 7c1a8d45</div>
-          <div class="cipher-line">91d4c7b3 e0f2a865 c3d1b47e 9f02a6c8</div>
-          <div class="cipher-line">0f7a3e9d 1c5b28f4 a6e0d93c 7b4f1a2e</div>
-        </div>
-        <div class="eb-divider"></div>
-        <div class="eb-row">
-          <span class="eb-label">Algorithmus</span>
-          <span class="eb-value cyan">AES-256-GCM</span>
-        </div>
-        <div class="eb-row">
-          <span class="eb-label">Key Derivation</span>
-          <span class="eb-value">PBKDF2 / 65 536 iter</span>
-        </div>
-        <div class="eb-row">
-          <span class="eb-label">Status</span>
-          <span class="eb-value green">✓ Verschlüsselt</span>
-        </div>
-        <div class="eb-row">
-          <span class="eb-label">Apps</span>
-          <span class="eb-value" style="font-size:0.68rem">SpecialMinds · CozyCare · Topfgeflüster</span>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+        <nav>
 
-<div class="stats-bar">
-  <div class="stat-item"><div class="stat-num c">1</div><div class="stat-label">Veröffentlichte Apps</div></div>
-  <div class="stat-item"><div class="stat-num c">256</div><div class="stat-label">Bit Verschlüsselung</div></div>
-  <div class="stat-item"><div class="stat-num c">100%</div><div class="stat-label">Datenschutz First</div></div>
-  <div class="stat-item"><div class="stat-num c">0</div><div class="stat-label">Werbeanzeigen</div></div>
-</div>
+            <div class="logo">
 
-<div class="security-section" id="security">
-  <div class="security-inner">
-    <div class="section-tag">// Security by Design</div>
-    <h2>Datenschutz ist<br>kein Feature — es ist das Fundament.</h2>
-    <p style="color:var(--muted);max-width:520px;line-height:1.7">In jeder meiner Apps gilt: Nutzerdaten gehören dem Nutzer. Keine Weitergabe, keine Werbeplattformen, keine Kompromisse.</p>
-    <div class="security-grid">
-      <div class="sec-card">
-        <div class="sec-icon">🔐</div>
-        <h3>AES-256-GCM Verschlüsselung</h3>
-        <p>Militärische Verschlüsselung für alle sensiblen Nutzerdaten. Derselbe Standard, den Banken und Regierungen einsetzen.</p>
-      </div>
-      <div class="sec-card">
-        <div class="sec-icon">🔑</div>
-        <h3>PBKDF2 Key Derivation</h3>
-        <p>Schlüssel werden mit 65.536 Iterationen abgeleitet — Brute-Force-Angriffe sind praktisch ummöglich.</p>
-      </div>
-      <div class="sec-card">
-        <div class="sec-icon">🚫</div>
-        <h3>Zero Ads / Zero Tracking</h3>
-        <p>Keine Werbenetze, keine Analytics-Tracker von Drittanbietern. Deine Daten fließen nirgendwo hin.</p>
-      </div>
-      <div class="sec-card">
-        <div class="sec-icon">☁️</div>
-        <h3>Firebase mit DSGVO-Compliance</h3>
-        <p>Backend-Infrastruktur über Firebase mit EU-datenschutzkonformer Konfiguration und klaren Datenlöschfunktionen.</p>
-      </div>
-    </div>
-  </div>
-</div>
+                appscanfly
 
-<section id="apps">
-  <div class="section-tag">// Meine Apps</div>
-  <h2>Gebaut mit Leidenschaft,<br>geliefert mit Qualität.</h2>
-  <p class="section-desc">Drei Apps, ein Anspruch: jede löst ein echtes Problem. Flutter, Jetpack Compose, Firebase — ausgewählt nach dem besten Tool für den Job.</p>
+            </div>
 
-  <div class="apps-grid">
+            <div class="menu">
 
-    <div class="app-card">
-      <div style="flex: 0 0 240px; min-width: 240px; display: flex; flex-direction: column;">
-        <div class="app-mockup" style="padding: 0; background: transparent; aspect-ratio: auto; flex: none; width: 100%;">
-          <img src="image.png" alt="SpecialMinds App Screenshot" class="app-screen-img" style="width: 100%; height: auto; display: block; border-radius: 24px; border: 1px solid var(--border);">
+                <a href="#">Apps</a>
+                <a href="#">Über</a>
+                <a href="#">Kontakt</a>
+
+            </div>
+
+        </nav>
+
+        <div id="hero">
+
+            <h1>
+
+                PORTFOLIO
+
+            </h1>
+
         </div>
-        <div class="app-tabs-nav">
-          <button class="app-tab-btn active" data-img="image.png" data-desc="Eine Community-App für Neurodivergenz — ADHS. Ein sicherer Ort für Austausch, Gedanken und gegenseitige Unterstützung. Mit mood-basierten Themes, Gedanken-Strom-Forum, verschlüsseltem Chat, Tauschbörse für Impulsiv-Einkäufe und anpassbaren Reiz-Reduzierungs-Modi. Aktuell im Beta Test.">Home</button>
-          <button class="app-tab-btn" data-img="specialminds2.png" data-desc="Das Gedanken-Strom-Forum bietet eine intuitive Struktur, um Gedanken ungefiltert zu teilen und sich mit Gleichgesinnten auszutauschen, ohne von komplexen Hierarchien oder Reizen überfordert zu werden.">Forum</button>
-          <button class="app-tab-btn" data-img="specialminds3.png" data-desc="Die Tauschbörse für Impulsiv-Einkäufe: Ein humorvolles und nützliches Feature, um Fehlkäufe aus spontanen Hyperfokus-Impulsen unkompliziert innerhalb der Community anzubieten oder zu tauschen.">Tausch</button>
-          <button class="app-tab-btn" data-img="specialminds4.png" data-desc="Sicherer, Ende-zu-Ende verschlüsselter Echtzeit-Chat für den privaten Eins-zu-Eins-Austausch und tiefe, ungestörte Gespräche mit vertrauenswürdigen Community-Mitgliedern.">Chat</button>
-          <button class="app-tab-btn" data-img="specialminds5.png" data-desc="Der Info-Bereich liefert reizreduzierte Aufklärung, wissenschaftlich fundierte Fakten, kuratierte Ressourcen und praktische Alltagstipps rund um das Leben mit Neurodiversität.">Info</button>
-        </div>
-      </div>
-      <div class="app-card-text">
-        <div class="app-type">Flutter · Firebase · Android</div>
-        <h3>SpecialMinds</h3>
-        <p class="app-desc">Eine Community-App für Neurodivergente — ADHS. Ein sicherer Ort für Austausch, Gedanken und gegenseitige Unterstützung. Mit mood-basierten Themes, Gedanken-Strom-Forum, verschlüsseltem Chat, Tauschbörse für Impulsiv-Einkäufe und anpassbaren Reiz-Reduzierungs-Modi. Aktuell im Beta Test.</p>
-        <div class="app-tags">
-          <span class="tag accent">AES-256 Encrypted</span>
-          <span class="tag">Flutter 3</span>
-          <span class="tag">Firebase Auth</span>
-          <span class="tag">Firestore</span>
-          <span class="tag">ADHS Community</span>
-        </div>
-      </div>
+
     </div>
 
-    <div class="app-card reverse">
-      <div style="flex: 0 0 240px; min-width: 240px; display: flex; flex-direction: column;">
-        <div class="app-mockup" style="padding: 0; background: transparent; aspect-ratio: auto; flex: none; width: 100%;">
-          <img src="cozycare.png" alt="CozyCare App Screenshot" class="app-screen-img" style="width: 100%; height: auto; display: block; border-radius: 24px; border: 1px solid var(--border);">
-        </div>
-        <div class="app-tabs-nav">
-          <button class="app-tab-btn active" data-img="cozycare.png" data-desc="Wellness-App für tägliche Selbstfürsorge und Terminmanagement. Biometrische Absicherung, AES-256 verschlüsseltes Backup-System, 5 wählbare Themes, Mehrsprachigkeit (DE/EN), smarte Erinnerungen via AlarmManager und passend zu jeder Stimmung wertvolle Übungen. Aktuell auf Google Play.">Home</button>
-          <button class="app-tab-btn" data-img="cozycare1.png" data-desc="Du hast einen schnellen Gedanken der gesichert werden muss? Schreibe unkompliziert und mit Farbanpassungen deine wichtigsten Notizen auf.">Notizen</button>
-          <button class="app-tab-btn" data-img="cozycare2.png" data-desc="Fortschritte im Blick behalten: Klare, visualisierte Auswertungen deiner täglichen Gewohnheiten, Stimmungen und Selbstfürsorge-Ziele helfen dir bei der langfristigen Routine-Entwicklung. Dankbarkeits und normales Tagebuch. Speicher deine Momente in Verbindung mit Fotos um dich an positive Tage zu erinnern.">Tagesplan</button>
-          <button class="app-tab-btn" data-img="cozycare3.png" data-desc="Umfangreiche Anpassungsmöglichkeiten für deinen Schutz und Komfort: Konfiguriere die biometrische Fingerabdruck-Sperre, wechsle zwischen den 5 Themes oder schalte die Sprache um.">Zen</button>
-          <button class="app-tab-btn" data-img="cozycare4.png" data-desc="Umfangreiche Anpassungsmöglichkeiten für deinen Schutz und Komfort: Konfiguriere die biometrische Fingerabdruck-Sperre, wechsle zwischen den 5 Themes oder schalte die Sprache um.">Profil</button>
-        </div>
-      </div>
-      <div class="app-card-text">
-        <div class="app-type">Kotlin · Jetpack Compose · Google Play</div>
-        <h3>CozyCare</h3>
-        <p class="app-desc">Wellness-App für tägliche Selbstfürsorge und Terminmanagement. Biometrische Absicherung, AES-256 verschlüsseltes Backup-System, 5 wählbare Themes, Mehrsprachigkeit (DE/EN) und smarte Erinnerungen via AlarmManager. Aktuell auf Google Play.</p>
-        <div class="app-tags">
-          <span class="tag accent">AES-256 Encrypted</span>
-          <span class="tag">Jetpack Compose</span>
-          <span class="tag">Biometrics</span>
-          <span class="tag">Google Play</span>
-          <span class="tag">DSGVO</span>
-        </div>
-        <a href="https://play.google.com/store/apps/details?id=com.appscanfly.cozycare" target="_blank" rel="noopener" class="app-link">Im Play Store ansehen →</a>
-      </div>
-    </div>
+    <div id="app"></div>
 
-    <div class="app-card">
-      <div style="flex: 0 0 240px; min-width: 240px; display: flex; flex-direction: column;">
-        <div class="app-mockup" style="padding: 0; background: transparent; aspect-ratio: auto; flex: none; width: 100%;">
-          <img src="topfgefluester.png" alt="Topfgeflüster App Screenshot" class="app-screen-img" style="width: 100%; height: auto; display: block; border-radius: 24px; border: 1px solid var(--border);">
-        </div>
-        <div class="app-tabs-nav">
-          <button class="app-tab-btn active" data-img="topfgefluester1.png" data-desc="Community-Rezepteplattform, auf der Nutzer eigene Rezepte hochladen, teilen und entdecken. Mein Kühlschrank - Wähle was du zu Hause hast und finde Rezepte passend dazu, ohne extra einkaufen zu müssen. Foto-Uploads, Public/Private Sichtbarkeit und verschlüsselter Datenspeicher — das Netz voller Kochgeheimnisse — absolut frei von öffentlichem Wertungsdruck oder Vergleichen.">Home</button>
-          <button class="app-tab-btn" data-img="topfgefluester.png" data-desc="Intelligente Rezeptsuche: Durchsuche unkompliziert tausende kulinarische Kreationen. Rezepte erstellen leicht gemacht: Lade eigene Kreationen inklusive Foto-Uploads hoch und entscheide flexibel, ob du sie öffentlich mit der Community teilst oder rein privat abspeicherst.">Entdecken</button>
-          <button class="app-tab-btn" data-img="topfgefluester3.png" data-desc="Küchengeflüster: Wertvolle Tipps in der Küche die jeder wenn er mag der Community preisgeben kann.">Geflüster</button>
-          <button class="app-tab-btn" data-img="topfgefluester4.png" data-desc="Dein persönlicher, vollkommen verschlüsselter Datenspeicher für all deine Kochgeheimnisse, Favoriten und private Geheim-Rezepte. Passe die App an deine Wünsche an und behalte deine Rezepte im Überblick.">Profil</button>
-        </div>
-      </div>
-      <div class="app-card-text">
-        <div class="app-type">Kotlin · Jetpack Compose · Community</div>
-        <h3>Topfgeflüster</h3>
-        <p class="app-desc">Community-Rezepteplattform, auf der Nutzer eigene Rezepte hochladen, teilen und entdecken. Foto-Uploads, Public/Private Sichtbarkeit und verschlüsselter Datenspeicher — das Netz voller Kochgeheimnisse. Eine App ohne Wertung.</p>
-        <div class="app-tags">
-          <span class="tag accent">AES-256 Encrypted</span>
-          <span class="tag">Jetpack Compose</span>
-          <span class="tag">Spoonacular API</span>
-          <span class="tag">Community</span>
-          <span class="tag">Firebase</span>
-        </div>
-      </div>
-    </div>
+    <script
+        type="module"
+        src="/src/main.js">
+    </script>
 
-  </div>
-</section>
-
-<div class="about-section-bg" id="about">
-  <section>
-    <div class="about-grid">
-      <div class="about-photo" style="border: none;">
-  <img src="ich.jpg" alt="Aurelio" style="width:100%; height:100%; object-fit:cover; border-radius:20px;">
-    </div>
-      <div>
-        <div class="section-tag">// Über mich</div>
-        <h2>Ich baue Apps,<br>die ich selbst nutzen würde.</h2>
-        <p style="color:var(--muted);line-height:1.75;margin-bottom:1rem;font-size:0.95rem">
-          Ich bin Aurelio — Solo-App-Entwickler und Fachinformatiker in der Anwendungsentwicklung. Ich baue Apps, die wirklich gebraucht werden: kein Bullshit, keine dunklen Patterns, kein Datenmissbrauch.
-        </p>
-        <p style="color:var(--muted);line-height:1.75;margin-bottom:1rem;font-size:0.95rem">
-          Mein Stack: Flutter & Dart für plattformübergreifende Apps, Kotlin & Jetpack Compose für native Android-Erlebnisse, Firebase für skalierbare Backends. Jede Zeile Code schreibe ich mit dem Ziel, dass die App sich richtig anfühlt.
-        </p>
-        <p style="color:var(--muted);line-height:1.75;font-size:0.95rem">
-          Datenschutz ist für mich selbstverständlich — deshalb ist AES-256-GCM-Verschlüsselung in jeder meiner Apps Standard. Nicht als Verkaufsargument, sondern weil es das Richtige ist.
-        </p>
-        <div class="skills-list">
-          <span class="tag">Flutter / Dart</span>
-          <span class="tag">Kotlin</span>
-          <span class="tag">Jetpack Compose</span>
-          <span class="tag">Firebase</span>
-          <span class="tag">Android Studio</span>
-          <span class="tag">Git / GitHub</span>
-          <span class="tag">AES-256</span>
-          <span class="tag">DSGVO</span>
-          <span class="tag">Google Play</span>
-          <span class="tag">REST APIs</span>
-        </div>
-      </div>
-    </div>
-  </section>
-</div>
-
-<div class="contact-section" id="contact">
-  <div class="contact-inner">
-    <div class="contact-left">
-      <div class="section-tag">// Kontakt</div>
-      <h2>Lass uns reden.</h2>
-      <p>Projektanfrage, Zusammenarbeit oder einfach Hallo sagen.</p>
-    </div>
-    <div class="contact-links">
-      <a href="mailto:support@appscanfly.de" class="contact-btn primary">✉️ E-Mail schreiben</a>
-      <a href="https://github.com/Aurelio-Syntax" target="_blank" rel="noopener" class="contact-btn secondary">⌥ GitHub ansehen</a>
-    </div>
-  </div>
-</div>
-
-<footer>
-  © 2026 Aurelio · Fachinformatiker · App Developer<br>
-  AES-256 Protected · Kein Tracking · Keine Werbung · Made with ♥
-</footer>
-
-<script>
-  const hexChars = '0123456789abcdef';
-  function randHex(n){
-    return Array.from({length:n},()=>hexChars[Math.floor(Math.random()*16)]).join('');
-  }
-  function randLine(){
-    return randHex(8)+' '+randHex(8)+' '+randHex(8)+' '+randHex(8);
-  }
-
-  const lines = document.querySelectorAll('.cipher-line');
-  let activeIdx = 2;
-
-  setInterval(function(){
-    lines.forEach(function(l, i){
-      l.textContent = randLine();
-      if(i === activeIdx){
-        l.classList.add('active');
-      } else {
-        l.classList.remove('active');
-      }
-    });
-    activeIdx = (activeIdx + 1) % lines.length;
-  }, 900);
-
-  /* Smooth scroll for nav links on older browsers */
-  document.querySelectorAll('a[href^="#"]').forEach(function(a){
-    a.addEventListener('click', function(e){
-      const target = document.querySelector(a.getAttribute('href'));
-      if(target){
-        e.preventDefault();
-        target.scrollIntoView({behavior:'smooth'});
-      }
-    });
-  });
-
-  /* Tab Navigation Logic for App Mockups */
-  document.querySelectorAll('.app-card').forEach(function(card) {
-    const img = card.querySelector('.app-screen-img');
-    const desc = card.querySelector('.app-desc');
-    const buttons = card.querySelectorAll('.app-tab-btn');
-
-    buttons.forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        buttons.forEach(function(b) { b.classList.remove('active'); });
-        btn.classList.add('active');
-        
-        if (img) img.src = btn.getAttribute('data-img');
-        if (desc) desc.textContent = btn.getAttribute('data-desc');
-      });
-    });
-  });
-</script>
 </body>
+
 </html>
