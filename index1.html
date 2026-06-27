@@ -1,798 +1,206 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>appscanfly</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Space+Grotesk:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#F6F5F1;
-  --text:#0A0A0A;
-  --muted:#888;
-}
-html,body{width:100%;height:100%;overflow-x:hidden}
-body{background:var(--bg);color:var(--text);font-family:'Space Grotesk',sans-serif}
-
-nav{
-  position:fixed;top:0;left:0;right:0;z-index:200;
-  display:flex;align-items:center;justify-content:space-between;
-  padding:22px 52px;
-}
-.nav-logo{font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:.1em;color:#333}
-.nav-links{display:flex;gap:32px}
-.nav-links a{font-size:13px;color:#888;text-decoration:none;letter-spacing:.04em;transition:color .2s}
-.nav-links a:hover{color:#0A0A0A}
-
-/* ── HERO STAGE ── */
-#stage{
-  position:relative;
-  width:100%;height:100vh;
-  display:flex;align-items:center;justify-content:center;
-  overflow:hidden;
-  background:var(--bg);
-}
-
-/* Giant BG text */
-.bg-word{
-  position:absolute;
-  font-family:'Playfair Display',serif;
-  font-size:clamp(100px,17vw,240px);
-  font-weight:900;
-  color:var(--text);
-  letter-spacing:-.04em;
-  line-height:1;
-  white-space:nowrap;
-  pointer-events:none;
-  z-index:1;
-  top:50%;left:50%;
-  transform:translate(-50%,-50%);
-  transition:opacity .8s ease, transform .8s ease;
-}
-.bg-word.hide{opacity:0;transform:translate(-50%,-50%) scale(1.08)}
-
-/* Three.js canvas */
-#three-canvas{
-  position:relative;z-index:5;
-  cursor:grab;
-  display:block;
-}
-#three-canvas:active{cursor:grabbing}
-
-/* hint */
-.stage-hint{
-  position:absolute;bottom:32px;left:50%;transform:translateX(-50%);
-  font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;
-  color:#aaa;text-transform:uppercase;z-index:10;
-  transition:opacity .4s;pointer-events:none;
-}
-
-/* ── SHATTER CANVAS ── */
-#shard-canvas{
-  position:fixed;top:0;left:0;width:100%;height:100%;
-  pointer-events:none;z-index:80;
-}
-
-/* ── DETAIL VIEW ── */
-#detail{
-  position:fixed;inset:0;z-index:100;
-  background:var(--bg);
-  overflow-y:auto;overflow-x:hidden;
-  opacity:0;pointer-events:none;
-  transition:opacity .5s ease;
-}
-#detail.open{opacity:1;pointer-events:auto}
-
-.dv-close{
-  position:fixed;top:24px;right:36px;z-index:300;
-  width:46px;height:46px;border:none;
-  background:rgba(0,0,0,.07);backdrop-filter:blur(10px);
-  border-radius:50%;cursor:pointer;
-  font-size:18px;color:#333;
-  display:flex;align-items:center;justify-content:center;
-  opacity:0;transition:opacity .5s .3s,background .2s;
-}
-#detail.open .dv-close{opacity:1}
-.dv-close:hover{background:rgba(0,0,0,.14)}
-
-/* Sticky giant title */
-.dv-sticky{
-  position:sticky;top:0;height:50vh;
-  display:flex;align-items:center;justify-content:center;
-  z-index:5;pointer-events:none;
-  overflow:hidden;
-}
-.dv-big-title{
-  font-family:'Playfair Display',serif;
-  font-size:clamp(64px,12vw,170px);
-  font-weight:900;letter-spacing:-.04em;
-  opacity:0;transform:scale(.35);
-  transition:opacity .65s cubic-bezier(.22,1,.36,1),transform .65s cubic-bezier(.22,1,.36,1);
-}
-.dv-big-title.show{opacity:1;transform:scale(1)}
-
-/* Cards */
-.dv-scroll-body{
-  position:relative;z-index:10;
-  padding:0 0 140px;
-  margin-top:-60px;
-}
-.dv-intro{
-  max-width:620px;margin:0 auto 48px;
-  padding:0 24px;
-  font-size:17px;color:#555;line-height:1.75;
-}
-.dv-cards-col{
-  display:flex;flex-direction:column;
-  align-items:center;gap:28px;
-}
-.dv-card{
-  width:min(660px,92vw);
-  border-radius:20px;overflow:hidden;
-  box-shadow:0 24px 72px rgba(0,0,0,.1);
-  opacity:0;transform:translateY(60px);
-  transition:opacity .6s ease,transform .6s cubic-bezier(.22,1,.36,1);
-}
-.dv-card.in{opacity:1;transform:translateY(0)}
-.dv-card-visual{
-  width:100%;aspect-ratio:16/9;
-  display:flex;align-items:center;justify-content:center;
-  font-size:80px;position:relative;overflow:hidden;
-}
-.dv-card-visual::after{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(to bottom,transparent 60%,rgba(0,0,0,.08));
-}
-.dv-screen-label{
-  position:absolute;bottom:14px;left:18px;
-  font-family:'JetBrains Mono',monospace;
-  font-size:10px;letter-spacing:.15em;text-transform:uppercase;
-  opacity:.6;z-index:1;
-}
-.dv-card-body{padding:26px 30px;background:#fff}
-.dv-card-eyebrow{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:#aaa;margin-bottom:6px}
-.dv-card-name{font-size:20px;font-weight:700;letter-spacing:-.01em;margin-bottom:8px}
-.dv-card-desc{font-size:14px;color:#666;line-height:1.65}
-.dv-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
-.dv-tag{font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid #e0e0e0;color:#888;font-family:'JetBrains Mono',monospace}
-.dv-btn{
-  display:inline-flex;align-items:center;gap:8px;
-  margin-top:18px;padding:12px 22px;border-radius:8px;
-  font-weight:600;font-size:14px;text-decoration:none;
-  transition:transform .2s,opacity .2s;
-}
-.dv-btn:hover{transform:translateY(-2px);opacity:.85}
-
-/* ── ABOUT + FOOTER ── */
-#about-section{padding:120px 48px;background:var(--bg)}
-.about-inner{max-width:1060px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
-.val-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#ddd;border:1px solid #ddd;border-radius:14px;overflow:hidden}
-.val-cell{background:#fff;padding:26px 22px;transition:background .2s}
-.val-cell:hover{background:#F9F8F5}
-.val-icon{font-size:22px;margin-bottom:9px}
-.val-name{font-weight:600;font-size:14px;margin-bottom:5px}
-.val-desc{font-size:12px;color:#999;line-height:1.5}
-.sec-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#00B4CC;margin-bottom:14px}
-.sec-title{font-family:'Playfair Display',serif;font-size:clamp(30px,4vw,50px);font-weight:700;letter-spacing:-.02em;line-height:1.1;margin-bottom:14px}
-.sec-body{font-size:15px;color:#888;line-height:1.7;max-width:400px}
-
-footer{border-top:1px solid #e8e8e8;padding:36px 48px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px}
-.foot-logo{font-family:'JetBrains Mono',monospace;font-size:12px;color:#bbb}
-.foot-links{display:flex;gap:22px}
-.foot-links a{font-size:12px;color:#bbb;text-decoration:none}
-.foot-links a:hover{color:#555}
-
-@media(max-width:768px){
-  nav{padding:16px 20px}.nav-links{display:none}
-  .about-inner{grid-template-columns:1fr;gap:40px;padding:0}
-  #about-section{padding:80px 24px}
-  footer{flex-direction:column;padding:28px 20px}
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Shatter Effect</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #050505; color: white; font-family: sans-serif; }
+        #canvas-container { width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; z-index: 1; }
+        .ui { position: absolute; z-index: 2; bottom: 80px; left: 50%; transform: translateX(-50%); text-align: center; }
+        button { 
+            padding: 15px 40px; 
+            font-size: 16px; 
+            cursor: pointer; 
+            background: rgba(255, 255, 255, 0.1); 
+            color: #fff; 
+            border: 1px solid rgba(255, 255, 255, 0.3); 
+            backdrop-filter: blur(10px);
+            border-radius: 50px; 
+            text-transform: uppercase; 
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+        }
+        button:hover { background: rgba(255, 255, 255, 0.3); }
+    </style>
 </head>
 <body>
 
-<nav>
-  <div class="nav-logo">appscanfly</div>
-  <div class="nav-links">
-    <a href="#stage">Apps</a>
-    <a href="#about-section">Über uns</a>
-    <a href="mailto:contact@appscanfly.de">Kontakt</a>
-  </div>
-</nav>
-
-<section id="stage">
-  <div class="bg-word" id="bg-word">PORTFOLIO</div>
-  <canvas id="three-canvas"></canvas>
-  <div class="stage-hint" id="stage-hint">← ziehen zum drehen · klicken für details</div>
-</section>
-
-<canvas id="shard-canvas"></canvas>
-
-<!-- DETAIL VIEW -->
-<div id="detail">
-  <button class="dv-close" id="dv-close">✕</button>
-  <div class="dv-sticky">
-    <div class="dv-big-title" id="dv-big-title"></div>
-  </div>
-  <div class="dv-scroll-body" id="dv-scroll-body"></div>
-</div>
-
-<section id="about-section">
-  <div class="about-inner">
-    <div>
-      <div class="sec-label">Über appscanfly</div>
-      <h2 class="sec-title">Solo-Entwickler.<br>Kein Kompromiss.</h2>
-      <p class="sec-body">Jede App wird von Grund auf mit echtem Fokus auf Nutzen gebaut — ohne Werbung, ohne Tracking, ohne Kompromisse bei der Privatsphäre.</p>
+    <div id="canvas-container"></div>
+    <div class="ui">
+        <button id="nextBtn">Next / Shatter</button>
     </div>
-    <div class="val-grid">
-      <div class="val-cell"><div class="val-icon">🔒</div><div class="val-name">AES-256</div><div class="val-desc">Lokale Verschlüsselung, kein Klartext.</div></div>
-      <div class="val-cell"><div class="val-icon">🚫</div><div class="val-name">Zero Ads</div><div class="val-desc">Keine Werbung, nirgends.</div></div>
-      <div class="val-cell"><div class="val-icon">🇩🇪</div><div class="val-name">DSGVO</div><div class="val-desc">Datenschutz nach deutschem Standard.</div></div>
-      <div class="val-cell"><div class="val-icon">👁️</div><div class="val-name">Zero Tracking</div><div class="val-desc">Kein Profiling, kein Fingerprinting.</div></div>
-    </div>
-  </div>
-</section>
 
-<footer>
-  <div class="foot-logo">© 2026 appscanfly</div>
-  <div class="foot-links">
-    <a href="#">Datenschutz</a>
-    <a href="#">Impressum</a>
-    <a href="mailto:contact@appscanfly.de">Kontakt</a>
-  </div>
-</footer>
-
-<!-- Three.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script>
-// ════════════════════════════════════════
-// APP DATA
-// ════════════════════════════════════════
-const APPS = [
-  {
-    name:'SpecialMinds', emoji:'🧠',
-    color:'#C97C5D', colorHex:0xC97C5D,
-    light:'#FDF0EB', dark:'#2A1810',
-    label:'Community · Flutter · Firebase',
-    tagline:'Eine Community für neurodivergente Menschen',
-    desc:'Sichere Themenräume, Gedanken-Strom, Audio-Memos und stimmungsbasierte Themes — gebaut für ADHS, Autismus & Co. Ohne ein einziges Tracking-SDK.',
-    tags:['Flutter','Firebase','AES-256','DSGVO'],
-    playUrl:'#',
-    screens:[
-      {label:'Dashboard',desc:'Mood-basiertes Dashboard mit 4 stimmungsgerechten Themes — Sand & Terrakotta, Nebel & Salbei, Dämmerung, Nachtmodus Mint.'},
-      {label:'Gedanken-Strom',desc:'Forum-Feed mit Chat-Bubble-Cards, Herz-Reaktionen und Timeline-Connector. Anonym oder mit Profil posten.'},
-      {label:'Brain Dump & Audio',desc:'Schnelle Gedankennotizen plus Audio-Memos (.m4a, lokal) — kein Cloud-Upload, keine fremden Server.'},
-    ]
-  },
-  {
-    name:'CozyCare', emoji:'💜',
-    color:'#9B8EC4', colorHex:0x9B8EC4,
-    light:'#F4F0FC', dark:'#1A1525',
-    label:'Wellness · Jetpack Compose',
-    tagline:'Dein persönlicher Pflege- & Wellness-Planer',
-    desc:'Kalender, biometrische App-Sperre, verschlüsselte Backups (AES-256-GCM) und smarte Erinnerungen. Alles lokal, alles sicher — Open Beta auf Google Play.',
-    tags:['Kotlin','Compose','AES-256-GCM','Open Beta'],
-    playUrl:'https://play.google.com/store/apps/details?id=com.appscanfly.cozycare',
-    screens:[
-      {label:'Kalender',desc:'Monatskalender mit Erinnerungsoptionen pro Event — 1 Tag vorher oder 1 Stunde vorher, via AlarmManager.'},
-      {label:'Themes',desc:'6 handgepickte Farbthemes: Sage Green, Rose, Himmelblau, Lavendel, Terrakotta, Mintgrün.'},
-      {label:'Verschlüsseltes Backup',desc:'PBKDF2 + AES-256-GCM, .cozybackup-Format. Fotos werden beim Import re-encrypted via Android Keystore.'},
-    ]
-  },
-  {
-    name:'Topfgeflüster', emoji:'🍳',
-    color:'#D4A843', colorHex:0xD4A843,
-    light:'#FDF8EC', dark:'#201A08',
-    label:'Rezepte · Jetpack Compose',
-    tagline:'Community-Rezeptplattform ohne externe Quellen',
-    desc:'Nur echte Rezepte echter Menschen. Foto-Upload, öffentlich/privat Steuerung, dunkles Culinary-Design. Live auf Google Play.',
-    tags:['Kotlin','Firestore','Spoonacular','Live'],
-    playUrl:'https://play.google.com/store/apps/details?id=com.appscanfly.topfgefluester',
-    screens:[
-      {label:'Rezept-Feed',desc:'Community-Feed mit Foto-Thumbnails, Kategorie-Filter und öffentlich/privat Toggle pro Rezept.'},
-      {label:'Rezept erstellen',desc:'Editor mit Foto-Upload, Zutatenliste und Sichtbarkeitssteuerung. Kein Scraping, nur echter User-Content.'},
-      {label:'Dark Culinary',desc:'Design-System: #0E0E0E Base, Amber-Gold #D4A843 Accent. Minimalistisch, appetitlich.'},
-    ]
-  }
-];
-
-// ════════════════════════════════════════
-// THREE.JS SETUP
-// ════════════════════════════════════════
-const canvas3 = document.getElementById('three-canvas');
-
-// Size the canvas to fill stage minus some margin
-function getSize(){
-  const W = Math.min(window.innerWidth, 1200);
-  const H = Math.min(window.innerHeight * 0.82, 700);
-  return {W, H};
-}
-
-const renderer = new THREE.WebGLRenderer({canvas:canvas3, antialias:true, alpha:true});
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type    = THREE.PCFSoftShadowMap;
-renderer.toneMapping       = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.1;
-
-const scene  = new THREE.Scene();
-scene.background = null; // transparent – page bg shows through
-
-const {W:W0, H:H0} = getSize();
-renderer.setSize(W0, H0);
-canvas3.style.width  = W0+'px';
-canvas3.style.height = H0+'px';
-
-const camera = new THREE.PerspectiveCamera(45, W0/H0, 0.1, 100);
-camera.position.set(0, 1.2, 5.5);
-camera.lookAt(0, 0, 0);
-
-window.addEventListener('resize', ()=>{
-  const {W,H} = getSize();
-  renderer.setSize(W,H);
-  canvas3.style.width  = W+'px';
-  canvas3.style.height = H+'px';
-  camera.aspect = W/H;
-  camera.updateProjectionMatrix();
-});
-
-// ── Lights ──
-const ambient = new THREE.AmbientLight(0xffffff, 0.55);
-scene.add(ambient);
-
-const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
-dirLight.position.set(4, 8, 5);
-dirLight.castShadow = true;
-dirLight.shadow.mapSize.set(2048,2048);
-dirLight.shadow.camera.near = 0.1;
-dirLight.shadow.camera.far  = 30;
-dirLight.shadow.camera.left = dirLight.shadow.camera.bottom = -6;
-dirLight.shadow.camera.right= dirLight.shadow.camera.top   =  6;
-scene.add(dirLight);
-
-const rimLight = new THREE.DirectionalLight(0xE8F4FF, 0.5);
-rimLight.position.set(-3,3,-4);
-scene.add(rimLight);
-
-const fillLight = new THREE.PointLight(0xFFF8F0, 0.4, 20);
-fillLight.position.set(0,4,2);
-scene.add(fillLight);
-
-// ── Cylinder geometry ──
-const CYL_R   = 1.35;
-const CYL_H   = 1.8;
-const CYL_SEG = 80;
-
-// Create textures for each face from canvas
-function makeAppTexture(app) {
-  const s = 512;
-  const cv = document.createElement('canvas');
-  cv.width = s; cv.height = s;
-  const c = cv.getContext('2d');
-
-  // Background gradient
-  const grd = c.createLinearGradient(0,0,0,s);
-  grd.addColorStop(0, app.light);
-  grd.addColorStop(1, '#ffffff');
-  c.fillStyle = grd;
-  c.roundRect(8,8,s-16,s-16,24);
-  c.fill();
-
-  // subtle border
-  c.strokeStyle = app.color+'66';
-  c.lineWidth = 4;
-  c.roundRect(8,8,s-16,s-16,24);
-  c.stroke();
-
-  // emoji
-  c.font = '160px serif';
-  c.textAlign = 'center';
-  c.textBaseline = 'middle';
-  c.fillText(app.emoji, s/2, s/2 - 60);
-
-  // name
-  c.font = "bold 52px 'Space Grotesk',sans-serif";
-  c.fillStyle = app.color;
-  c.textAlign = 'center';
-  c.textBaseline = 'middle';
-  c.fillText(app.name, s/2, s/2 + 70);
-
-  // label
-  c.font = "400 24px 'JetBrains Mono',monospace";
-  c.fillStyle = '#aaaaaa';
-  c.fillText(app.label.split('·')[0].trim().toUpperCase(), s/2, s/2 + 130);
-
-  const tex = new THREE.CanvasTexture(cv);
-  return tex;
-}
-
-// Build cylinder with per-face materials
-function buildCylinder() {
-  // We build a cylinder with N=3 radial segments so each face = one app
-  // Actually for nice 3D we use many segments but apply textures via UV manipulation
-  // Simpler: 3 separate planes curved and placed around the cylinder axis
-
-  const group = new THREE.Group();
-
-  const N = APPS.length;
-  APPS.forEach((app, i) => {
-    const angle = (i / N) * Math.PI * 2 - Math.PI/2;
-
-    // Curved plane: build a curved quad for each face
-    const faceW  = CYL_R * 2 * Math.sin(Math.PI / N) * 1.92;
-    const segs   = 24; // horizontal segments for curvature
-    const geo    = new THREE.PlaneGeometry(faceW, CYL_H, segs, 1);
-    const pos    = geo.attributes.position;
-
-    // Bend each vertex around the cylinder
-    for(let v = 0; v < pos.count; v++){
-      const x   = pos.getX(v);
-      const frac = x / faceW; // -0.5 … 0.5
-      const span = (2*Math.PI / N) * 0.92;
-      const a   = angle + frac * span;
-      pos.setXYZ(v, Math.cos(a)*CYL_R, pos.getY(v), Math.sin(a)*CYL_R);
-    }
-    geo.computeVertexNormals();
-
-    const tex = makeAppTexture(app);
-    const mat = new THREE.MeshStandardMaterial({
-      map: tex,
-      roughness: 0.18,
-      metalness: 0.05,
-      envMapIntensity: 1.0,
-      side: THREE.FrontSide,
-    });
-
-    const mesh = new THREE.Mesh(geo, mat);
-    mesh.castShadow = true;
-    mesh.userData.appIdx = i;
-    group.add(mesh);
-  });
-
-  // Top cap
-  const topGeo = new THREE.CylinderGeometry(CYL_R, CYL_R, 0.04, 64);
-  const capMat = new THREE.MeshStandardMaterial({color:0xffffff, roughness:.3, metalness:.1, transparent:true, opacity:.7});
-  const topCap = new THREE.Mesh(topGeo, capMat);
-  topCap.position.y = CYL_H/2 + 0.02;
-  group.add(topCap);
-
-  // Bottom cap
-  const botCap = topCap.clone();
-  botCap.position.y = -CYL_H/2 - 0.02;
-  group.add(botCap);
-
-  return group;
-}
-
-const cylGroup = buildCylinder();
-scene.add(cylGroup);
-
-// ── Floor with reflection ──
-const floorGeo = new THREE.PlaneGeometry(14, 14);
-const floorMat = new THREE.MeshStandardMaterial({
-  color: 0xF0EFE9,
-  roughness: 0.05,
-  metalness: 0.0,
-});
-const floor = new THREE.Mesh(floorGeo, floorMat);
-floor.rotation.x = -Math.PI/2;
-floor.position.y = -CYL_H/2 - 0.02;
-floor.receiveShadow = true;
-scene.add(floor);
-
-// Mirror / reflection plane using a render target
-const mirrorRT = new THREE.WebGLRenderTarget(512, 512);
-const mirrorMat = new THREE.MeshBasicMaterial({
-  map: mirrorRT.texture,
-  transparent: true,
-  opacity: 0.28,
-});
-const mirrorMesh = new THREE.Mesh(floorGeo, mirrorMat);
-mirrorMesh.rotation.x = -Math.PI/2;
-mirrorMesh.position.y = floor.position.y - 0.001;
-scene.add(mirrorMesh);
-
-// Reflection camera (below floor, flipped)
-const mirrorCam = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
-
-// Gradient fade overlay on floor
-const fadeGeo = new THREE.PlaneGeometry(14, 14);
-const fadeTex = (() => {
-  const c = document.createElement('canvas'); c.width=2; c.height=256;
-  const ctx = c.getContext('2d');
-  const g = ctx.createLinearGradient(0,0,0,256);
-  g.addColorStop(0,'rgba(246,245,241,0)');
-  g.addColorStop(0.45,'rgba(246,245,241,0.7)');
-  g.addColorStop(1,'rgba(246,245,241,1)');
-  ctx.fillStyle=g; ctx.fillRect(0,0,2,256);
-  return new THREE.CanvasTexture(c);
-})();
-const fadeMat = new THREE.MeshBasicMaterial({map:fadeTex, transparent:true, depthWrite:false});
-const fadeMesh = new THREE.Mesh(fadeGeo, fadeMat);
-fadeMesh.rotation.x = -Math.PI/2;
-fadeMesh.position.y = floor.position.y + 0.01;
-scene.add(fadeMesh);
-
-// ── Gloss highlight strip on cylinder ──
-// We add a thin bright arc mesh to simulate specular highlight
-const hlGeo = new THREE.CylinderGeometry(CYL_R+0.002, CYL_R+0.002, CYL_H*0.8, 80, 1, true, -0.18, 0.36);
-const hlMat = new THREE.MeshBasicMaterial({
-  color:0xffffff, transparent:true, opacity:0.18,
-  side:THREE.BackSide, depthWrite:false
-});
-const hlMesh = new THREE.Mesh(hlGeo, hlMat);
-cylGroup.add(hlMesh);
-
-// ── Env map for reflections (simple gradient) ──
-const pmremGen = new THREE.PMREMGenerator(renderer);
-const envScene = new THREE.Scene();
-envScene.background = new THREE.Color(0xF0EEE8);
-const envTex = pmremGen.fromScene(new THREE.RoomEnvironment()).texture;
-scene.environment = envTex;
-
-// ════════════════════════════════════════
-// INTERACTION
-// ════════════════════════════════════════
-let rotY     = 0;
-let targetY  = 0;
-let autoSpin = true;
-let isDrag   = false;
-let dragX    = 0;
-let dragRot  = 0;
-
-const lerp = (a,b,t) => a+(b-a)*t;
-
-canvas3.addEventListener('mousedown', e=>{
-  isDrag=true; autoSpin=false;
-  dragX=e.clientX; dragRot=targetY;
-  canvas3.style.cursor='grabbing';
-});
-window.addEventListener('mousemove', e=>{
-  if(!isDrag)return;
-  targetY = dragRot - (e.clientX-dragX)*0.008;
-});
-window.addEventListener('mouseup', ()=>{isDrag=false; canvas3.style.cursor='grab'});
-
-canvas3.addEventListener('touchstart', e=>{
-  isDrag=true; autoSpin=false;
-  dragX=e.touches[0].clientX; dragRot=targetY;
-},{passive:true});
-window.addEventListener('touchmove', e=>{
-  if(!isDrag)return;
-  targetY=dragRot-(e.touches[0].clientX-dragX)*0.008;
-},{passive:true});
-window.addEventListener('touchend',()=>{isDrag=false});
-
-// Raycasting for click
-const raycaster = new THREE.Raycaster();
-const mouse     = new THREE.Vector2();
-
-canvas3.addEventListener('click', e=>{
-  if(Math.abs(e.clientX-dragX)>5)return; // was a drag
-  const r   = canvas3.getBoundingClientRect();
-  mouse.x   =  ((e.clientX-r.left)/r.width )*2-1;
-  mouse.y   = -((e.clientY-r.top )/r.height)*2+1;
-  raycaster.setFromCamera(mouse, camera);
-
-  // Check all face meshes (first N children of cylGroup)
-  const meshes = cylGroup.children.slice(0, APPS.length);
-  const hits   = raycaster.intersectObjects(meshes);
-  if(hits.length===0)return;
-
-  const idx = hits[0].object.userData.appIdx;
-  if(idx===undefined)return;
-
-  triggerOpen(idx, e.clientX, e.clientY);
-});
-
-// ════════════════════════════════════════
-// SHARD ENGINE
-// ════════════════════════════════════════
-const shardCanvas = document.getElementById('shard-canvas');
-const shCtx       = shardCanvas.getContext('2d');
-let shards = [];
-
-function resizeShard(){
-  shardCanvas.width  = window.innerWidth;
-  shardCanvas.height = window.innerHeight;
-}
-resizeShard();
-window.addEventListener('resize', resizeShard);
-
-function spawnShards(app, cx, cy){
-  for(let i=0;i<28;i++){
-    const ang  = Math.random()*Math.PI*2;
-    const spd  = 3+Math.random()*12;
-    const size = 20+Math.random()*80;
-    const pts  = [];
-    const n    = 3+Math.floor(Math.random()*2);
-    for(let v=0;v<n;v++){
-      const a=v/n*Math.PI*2+Math.random()*.9;
-      pts.push({x:Math.cos(a)*size*(0.4+Math.random()*.6),
-                y:Math.sin(a)*size*(0.3+Math.random()*.7)});
-    }
-    shards.push({
-      cx, cy, pts,
-      vx:Math.cos(ang)*spd,
-      vy:Math.sin(ang)*spd - 3,
-      vr:(Math.random()-.5)*.14,
-      rot:Math.random()*Math.PI*2,
-      life:1, color:app.color, light:app.light,
-    });
-  }
-}
-
-function runShards(){
-  shCtx.clearRect(0,0,shardCanvas.width,shardCanvas.height);
-  shards=shards.filter(s=>s.life>.01);
-  shards.forEach(s=>{
-    s.cx+=s.vx; s.cy+=s.vy;
-    s.vy+=0.22; s.vx*=0.96;
-    s.rot+=s.vr; s.life*=0.92;
-
-    shCtx.save();
-    shCtx.globalAlpha=s.life*0.82;
-    shCtx.translate(s.cx,s.cy);
-    shCtx.rotate(s.rot);
-
-    shCtx.beginPath();
-    shCtx.moveTo(s.pts[0].x,s.pts[0].y);
-    s.pts.slice(1).forEach(p=>shCtx.lineTo(p.x,p.y));
-    shCtx.closePath();
-
-    const g=shCtx.createLinearGradient(-30,-30,30,30);
-    g.addColorStop(0, s.light+'EE');
-    g.addColorStop(1, s.color+'AA');
-    shCtx.fillStyle=g;
-    shCtx.fill();
-    shCtx.strokeStyle=s.color+'88';
-    shCtx.lineWidth=1.2;
-    shCtx.stroke();
-    shCtx.restore();
-  });
-  requestAnimationFrame(runShards);
-}
-runShards();
-
-// ════════════════════════════════════════
-// DETAIL VIEW
-// ════════════════════════════════════════
-const detail      = document.getElementById('detail');
-const dvBigTitle  = document.getElementById('dv-big-title');
-const dvScrollBody= document.getElementById('dv-scroll-body');
-const dvClose     = document.getElementById('dv-close');
-const bgWord      = document.getElementById('bg-word');
-const stageHint   = document.getElementById('stage-hint');
-let   detailOpen  = false;
-
-const SCREEN_BG = [
-  ['#F0EDFF','#D8D0FF'],
-  ['#FFF0EB','#FFD9C8'],
-  ['#EDFFF3','#C8F0D8'],
-];
-
-function buildDetail(app){
-  dvScrollBody.innerHTML='';
-
-  const intro=document.createElement('p');
-  intro.className='dv-intro';
-  intro.textContent=app.desc;
-  dvScrollBody.appendChild(intro);
-
-  const col=document.createElement('div');
-  col.className='dv-cards-col';
-
-  app.screens.forEach((sc,i)=>{
-    const card=document.createElement('div');
-    card.className='dv-card';
-    card.style.transitionDelay=`${i*.13}s`;
-
-    const [c0,c1]=SCREEN_BG[i%SCREEN_BG.length];
-    card.innerHTML=`
-      <div class="dv-card-visual" style="background:linear-gradient(135deg,${c0},${c1})">
-        <span>${app.emoji}</span>
-        <div class="dv-screen-label" style="color:${app.color}">${sc.label}</div>
-      </div>
-      <div class="dv-card-body">
-        <div class="dv-card-eyebrow">${sc.label}</div>
-        <div class="dv-card-name" style="color:${app.color}">${app.name}</div>
-        <div class="dv-card-desc">${sc.desc}</div>
-        <div class="dv-tags">${app.tags.map(t=>`<span class="dv-tag">${t}</span>`).join('')}</div>
-        ${i===app.screens.length-1?`<a class="dv-btn" href="${app.playUrl}" target="_blank" style="background:${app.color};color:#fff">Auf Google Play →</a>`:''}
-      </div>
-    `;
-    col.appendChild(card);
-  });
-
-  dvScrollBody.appendChild(col);
-}
-
-function triggerOpen(idx, clickX, clickY){
-  if(detailOpen)return;
-  detailOpen=true;
-  autoSpin=false;
-
-  const app=APPS[idx];
-  spawnShards(app, clickX, clickY);
-
-  buildDetail(app);
-  dvBigTitle.textContent=app.name;
-  dvBigTitle.style.color=app.color;
-
-  bgWord.classList.add('hide');
-  stageHint.style.opacity='0';
-
-  setTimeout(()=>{
-    detail.classList.add('open');
-    setTimeout(()=>{dvBigTitle.classList.add('show');},80);
-    setTimeout(()=>{
-      dvScrollBody.querySelectorAll('.dv-card').forEach((c,i)=>{
-        setTimeout(()=>c.classList.add('in'),i*140);
-      });
-    },380);
-  },50);
-}
-
-function closeDetail(){
-  if(!detailOpen)return;
-  detailOpen=false;
-  dvBigTitle.classList.remove('show');
-  bgWord.classList.remove('hide');
-  stageHint.style.opacity='1';
-  setTimeout(()=>{
-    detail.classList.remove('open');
-    detail.scrollTop=0;
-    dvBigTitle.textContent='';
-    dvScrollBody.innerHTML='';
-  },500);
-}
-dvClose.addEventListener('click',closeDetail);
-
-// Scroll wave on cards in detail
-detail.addEventListener('scroll',()=>{
-  const H=detail.clientHeight;
-  detail.querySelectorAll('.dv-card.in').forEach(card=>{
-    const r=card.getBoundingClientRect();
-    const p=Math.max(0,(H*.55-r.top)/H);
-    card.style.transform=`translateY(${-p*p*28}px) scale(${1-p*.04})`;
-    card.style.opacity=String(Math.max(0,1-p*1.5));
-  });
-});
-
-// ════════════════════════════════════════
-// RENDER LOOP
-// ════════════════════════════════════════
-const clock = new THREE.Clock();
-
-function render(){
-  requestAnimationFrame(render);
-
-  const dt = clock.getDelta();
-  if(autoSpin) targetY += 0.004;
-  rotY = lerp(rotY, targetY, 0.07);
-  cylGroup.rotation.y = rotY;
-
-  // Mirror reflection pass
-  const camY = camera.position.y;
-  mirrorMesh.visible = false;
-  fadeMesh.visible   = false;
-  mirrorCam.copy(camera);
-  mirrorCam.position.y = -camY + 2*floor.position.y;
-  mirrorCam.lookAt(0, floor.position.y, 0);
-  mirrorCam.aspect   = 1;
-  mirrorCam.updateProjectionMatrix();
-  renderer.setRenderTarget(mirrorRT);
-  renderer.render(scene, mirrorCam);
-  renderer.setRenderTarget(null);
-  mirrorMesh.visible = true;
-  fadeMesh.visible   = true;
-
-  renderer.render(scene, camera);
-}
-render();
-</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+    <script>
+        // 1. Basis-Setup
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 6;
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        container.appendChild(renderer.domElement);
+
+        // 2. Platzhalter-Bilder aus dem Netz laden
+        const loader = new THREE.TextureLoader();
+        // Damit wir keine CORS Probleme mit den Platzhaltern kriegen, nutzen wir eine offene API
+        const textures = [
+            loader.load('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1024&auto=format&fit=crop'),
+            loader.load('https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=1024&auto=format&fit=crop')
+        ];
+        let currentIndex = 0;
+
+        // 3. Geometrie bauen (Das Bild in kleine Dreiecke zerlegen)
+        // 40x40 Segmente = viele kleine Splitter
+        let geometry = new THREE.PlaneGeometry(10, 6, 40, 40); 
+        
+        // WICHTIG: non-indexed macht jedes Dreieck völlig unabhängig voneinander
+        geometry = geometry.toNonIndexed(); 
+
+        const positionAttribute = geometry.getAttribute('position');
+        const vertexCount = positionAttribute.count;
+        const triangleCount = vertexCount / 3;
+        
+        // Arrays für die Flugrichtung und Rotationszentren der Splitter
+        const randoms = new Float32Array(vertexCount * 3); 
+        const centers = new Float32Array(vertexCount * 3); 
+
+        for(let i = 0; i < triangleCount; i++) {
+            // Eine zufällige Flugrichtung für jedes Dreieck
+            const dirX = (Math.random() - 0.5) * 8.0;
+            const dirY = (Math.random() - 0.5) * 8.0;
+            const dirZ = Math.random() * 6.0 + 2.0; // Fliegt in Richtung Kamera
+
+            // Den Mittelpunkt des jeweiligen Dreiecks berechnen
+            const i3 = i * 9;
+            const cx = (positionAttribute.array[i3] + positionAttribute.array[i3+3] + positionAttribute.array[i3+6]) / 3;
+            const cy = (positionAttribute.array[i3+1] + positionAttribute.array[i3+4] + positionAttribute.array[i3+7]) / 3;
+            const cz = (positionAttribute.array[i3+2] + positionAttribute.array[i3+5] + positionAttribute.array[i3+8]) / 3;
+
+            // Die Werte auf alle 3 Eckpunkte des Dreiecks anwenden
+            for(let j = 0; j < 3; j++) {
+                const idx = (i * 3 + j) * 3;
+                randoms[idx] = dirX; randoms[idx+1] = dirY; randoms[idx+2] = dirZ;
+                centers[idx] = cx; centers[idx+1] = cy; centers[idx+2] = cz;
+            }
+        }
+
+        geometry.setAttribute('aRandom', new THREE.BufferAttribute(randoms, 3));
+        geometry.setAttribute('aCenter', new THREE.BufferAttribute(centers, 3));
+
+        // 4. Das Herzstück: Der Custom Shader
+        const material = new THREE.ShaderMaterial({
+            uniforms: {
+                uTexture: { value: textures[0] },
+                uProgress: { value: 0.0 }
+            },
+            vertexShader: `
+                uniform float uProgress;
+                attribute vec3 aRandom;
+                attribute vec3 aCenter;
+                varying vec2 vUv;
+
+                // Matrix, um die Splitter wild rotieren zu lassen
+                mat4 rotationMatrix(vec3 axis, float angle) {
+                    axis = normalize(axis);
+                    float s = sin(angle); float c = cos(angle); float oc = 1.0 - c;
+                    return mat4(oc * axis.x * axis.x + c, oc * axis.x * axis.y - axis.z * s, oc * axis.z * axis.x + axis.y * s, 0.0,
+                                oc * axis.x * axis.y + axis.z * s, oc * axis.y * axis.y + c, oc * axis.y * axis.z - axis.x * s, 0.0,
+                                oc * axis.z * axis.x - axis.y * s, oc * axis.y * axis.z + axis.x * s, oc * axis.z * axis.z + c, 0.0,
+                                0.0, 0.0, 0.0, 1.0);
+                }
+
+                void main() {
+                    vUv = uv;
+                    
+                    // Rotationsachse und Winkel
+                    vec3 axis = normalize(aRandom);
+                    float angle = uProgress * 3.14 * 4.0; // Dreht sich 2 mal
+                    mat4 rot = rotationMatrix(axis, angle);
+
+                    // Verschieben zum Zentrum, rotieren, und zurück verschieben
+                    vec3 pos = position - aCenter;
+                    pos = (rot * vec4(pos, 1.0)).xyz;
+                    pos += aCenter;
+
+                    // Den Splitter in seine Richtung fliegen lassen
+                    pos += aRandom * uProgress;
+
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+                }
+            `,
+            fragmentShader: `
+                uniform sampler2D uTexture;
+                uniform float uProgress;
+                varying vec2 vUv;
+
+                void main() {
+                    vec4 color = texture2D(uTexture, vUv);
+                    
+                    // Die Splitter langsam unsichtbar machen, je weiter sie fliegen
+                    color.a *= (1.0 - uProgress);
+                    
+                    gl_FragColor = color;
+                }
+            `,
+            transparent: true,
+            side: THREE.DoubleSide
+        });
+
+        const shatterMesh = new THREE.Mesh(geometry, material);
+        scene.add(shatterMesh);
+
+        // 5. Das Hintergrundbild (Das nächste Bild im Carousel)
+        const bgGeometry = new THREE.PlaneGeometry(10, 6);
+        const bgMaterial = new THREE.MeshBasicMaterial({ map: textures[1] });
+        const bgMesh = new THREE.Mesh(bgGeometry, bgMaterial);
+        bgMesh.position.z = -0.5; // Leicht nach hinten versetzt
+        scene.add(bgMesh);
+
+        // 6. Render-Loop am Laufen halten
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // 7. Der Klick-Event, der die GSAP Animation startet
+        let isAnimating = false;
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            if(isAnimating) return; // Verhindert Spam-Klicks
+            isAnimating = true;
+
+            // Animiert den uProgress Wert im Shader von 0 auf 1
+            gsap.to(material.uniforms.uProgress, {
+                value: 1.0,
+                duration: 1.8,
+                ease: "power2.inOut",
+                onComplete: () => {
+                    // Nach der Explosion: Texturen durchtauschen
+                    currentIndex = (currentIndex + 1) % textures.length;
+                    let nextIndex = (currentIndex + 1) % textures.length;
+                    
+                    material.uniforms.uTexture.value = textures[currentIndex];
+                    bgMaterial.map = textures[nextIndex];
+                    
+                    // Splitter wieder auf Startposition setzen (uProgress auf 0)
+                    material.uniforms.uProgress.value = 0.0;
+                    isAnimating = false;
+                }
+            });
+        });
+
+        // 8. Responsive machen
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
 </body>
 </html>
