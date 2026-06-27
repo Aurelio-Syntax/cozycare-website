@@ -2,74 +2,81 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>Portfolio Experience Aikawa-Style</title>
     <style>
-        body { margin: 0; background: #000; overflow: hidden; }
-        #canvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; }
+        body { margin: 0; background: #000; overflow-x: hidden; font-family: sans-serif; }
+        /* HTML Bilder sind Platzhalter für die Sync-Engine */
+        .work-item { width: 40vw; height: 50vh; margin: 40vh auto; position: relative; opacity: 0; }
+        canvas { position: fixed; top: 0; left: 0; z-index: 10; pointer-events: none; }
     </style>
 </head>
 <body>
-    <canvas id="canvas"></canvas>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script>
+
+    <div class="work-item" data-src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe"></div>
+    <div class="work-item" data-src="https://images.unsplash.com/photo-1556910103-1c02745aae4d"></div>
+
+    <canvas id="app"></canvas>
+
+    <script type="module">
+        import * as THREE from 'https://cdn.skypack.dev/three@0.132.2';
+
         const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 100);
-        camera.position.z = 10;
-        const renderer = new THREE.WebGLRenderer({ canvas: document.querySelector('#canvas'), antialias: true });
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+        camera.position.z = 5;
+        const renderer = new THREE.WebGLRenderer({ canvas: document.querySelector('#app'), alpha: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
 
-        // 1. Instanziierte Geometrie (Die Scherben)
-        const count = 2000;
-        const geometry = new THREE.BoxGeometry(0.15, 0.15, 0.05); // Die "Dicke" des Glases
-        const material = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.6, roughness: 0.1 });
-        const mesh = new THREE.InstancedMesh(geometry, material, count);
+        const loader = new THREE.TextureLoader();
+        const items = document.querySelectorAll('.work-item');
+        const meshStore = [];
 
-        // 2. Initialisierung in Zylinder-Form
-        const dummy = new THREE.Object3D();
-        const positions = [];
-        for(let i=0; i<count; i++) {
-            const angle = (i / count) * Math.PI * 1.5;
-            const x = Math.sin(angle) * 4;
-            const z = Math.cos(angle) * 4 - 4;
-            dummy.position.set(x, (Math.random()-0.5)*4, z);
-            dummy.rotation.y = angle;
-            dummy.updateMatrix();
-            mesh.setMatrixAt(i, dummy.matrix);
-            positions.push(new THREE.Vector3(x, 0, z)); // Save start pos
-        }
-        scene.add(mesh);
+        // SHATTER SHADER (Mathematische Zerstörung)
+        const vertexShader = `
+            uniform float uTime;
+            uniform float uScroll;
+            varying vec2 vUv;
+            void main() {
+                vUv = uv;
+                vec3 pos = position;
+                // Physik: Zerbricht das Bild basierend auf Scroll-Geschwindigkeit
+                pos.z += sin(pos.x * 20.0 + uScroll * 0.1) * (uScroll * 0.05);
+                pos.x += cos(pos.y * 20.0) * (uScroll * 0.02);
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+            }
+        `;
 
-        // 3. Licht für den Aikawa-Glanz (Essential für Glas-Look)
-        scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-        const dirLight = new THREE.DirectionalLight(0xffffff, 1);
-        dirLight.position.set(5, 5, 5);
-        scene.add(dirLight);
+        const fragmentShader = `
+            varying vec2 vUv;
+            uniform sampler2D uTex;
+            void main() { gl_FragColor = texture2D(uTex, vUv); }
+        `;
 
-        // 4. Interaktions-Logik (Klick auf Bild / Mesh)
-        let shattered = false;
-        window.addEventListener('click', () => {
-            shattered = !shattered;
+        items.forEach(el => {
+            const tex = loader.load(el.dataset.src);
+            const geo = new THREE.PlaneGeometry(1, 1, 64, 64);
+            const mat = new THREE.ShaderMaterial({ uniforms: { uTex: { value: tex }, uTime: { value: 0 }, uScroll: { value: 0 } }, vertexShader, fragmentShader });
+            const mesh = new THREE.Mesh(geo, mat);
+            scene.add(mesh);
+            meshStore.push({ el, mesh });
         });
 
-        function animate() {
-            requestAnimationFrame(animate);
-            for(let i=0; i<count; i++) {
-                mesh.getMatrixAt(i, dummy.matrix);
-                dummy.matrix.decompose(dummy.position, dummy.rotation, dummy.scale);
-                
-                // Physik-Logik: Interpolation zum Scherben-Zustand
-                if(shattered) {
-                    dummy.position.x += (Math.random()-0.5) * 0.1;
-                    dummy.position.z += (Math.random()-0.5) * 0.1;
-                }
-                
-                dummy.updateMatrix();
-                mesh.setMatrixAt(i, dummy.matrix);
-            }
-            mesh.instanceMatrix.needsUpdate = true;
+        function render() {
+            const scrollY = window.scrollY;
+            meshStore.forEach(m => {
+                const rect = m.el.getBoundingClientRect();
+                // 1. Sync: Überlappung
+                m.mesh.scale.set(rect.width * 0.01, rect.height * 0.01, 1);
+                m.mesh.position.set(
+                    (rect.left + rect.width/2 - window.innerWidth/2) * 0.01,
+                    -(rect.top + rect.height/2 - window.innerHeight/2) * 0.01,
+                    0
+                );
+                // 2. Shatter: Scroll-Wert in den Shader geben
+                m.mesh.material.uniforms.uScroll.value = scrollY;
+            });
             renderer.render(scene, camera);
+            requestAnimationFrame(render);
         }
-        animate();
+        render();
     </script>
 </body>
 </html>
