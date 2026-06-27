@@ -308,10 +308,9 @@ sun.shadow.camera.left=sun.shadow.camera.bottom=-6;
 sun.shadow.camera.right=sun.shadow.camera.top=6;
 scene.add(sun);
 
-scene.add(Object.assign(
-  new THREE.DirectionalLight(0xd0e4ff, 0.35),
-  {position:new THREE.Vector3(-4,3,-3)}
-));
+const fillLight = new THREE.DirectionalLight(0xd0e4ff, 0.35);
+fillLight.position.set(-4, 3, -3);
+scene.add(fillLight);
 
 // ── Env map (r128 compatible) ──
 (function buildEnv(){
