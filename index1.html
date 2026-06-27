@@ -2,427 +2,74 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Glass Shatter & Scroll</title>
+    <title>Portfolio Experience Aikawa-Style</title>
     <style>
-        :root {
-            --bg-color: #f2f2f2;
-            --text-color: #111;
-        }
-
-        body, html {
-            margin: 0;
-            padding: 0;
-            background: var(--bg-color);
-            color: var(--text-color);
-            font-family: 'Times New Roman', Times, serif;
-            overflow-x: hidden;
-            overflow-y: hidden;
-        }
-
-        #webgl-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: 2;
-        }
-
-        .hero-title-container {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 1;
-            text-align: center;
-            width: 100%;
-        }
-
-        .hero-title {
-            font-size: 12vw;
-            font-weight: 400;
-            letter-spacing: -0.02em;
-            margin: 0;
-            transform-origin: center center;
-            color: #000;
-        }
-
-        .instruction {
-            position: fixed;
-            bottom: 40px;
-            width: 100%;
-            text-align: center;
-            font-family: sans-serif;
-            font-size: 12px;
-            letter-spacing: 2px;
-            color: #666;
-            z-index: 10;
-            pointer-events: none;
-            transition: opacity 0.5s ease;
-        }
-
-        /* Galerie */
-        #gallery {
-            position: relative;
-            z-index: 3;
-            margin-top: 100vh;
-            padding: 10vh 0 20vh 0;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            gap: 15vh;
-        }
-
-        .gallery-item {
-            width: 60vw;
-            max-width: 800px;
-            perspective: 1000px;
-        }
-
-        .gallery-image-wrapper {
-            width: 100%;
-            height: 60vh;
-            border-radius: 8px;
-            overflow: hidden;
-            transform-origin: top center;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-        }
-
-        .gallery-image-wrapper img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .gallery-info {
-            margin-top: 20px;
-            text-align: center;
-            font-family: sans-serif;
-        }
-
-        .gallery-info h2 {
-            font-family: 'Times New Roman', Times, serif;
-            font-size: 3rem;
-            margin: 0 0 10px 0;
-        }
+        body { margin: 0; background: #000; overflow: hidden; }
+        #canvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; }
     </style>
 </head>
 <body>
-
-    <div class="hero-title-container">
-        <h1 class="hero-title" id="main-title">PORTFOLIO</h1>
-    </div>
-
-    <div id="webgl-container"></div>
-    <div class="instruction" id="instruction">CLICK THE IMAGE</div>
-
-    <div id="gallery">
-        <div class="gallery-item">
-            <div class="gallery-image-wrapper js-scroll-wave">
-                <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1600&auto=format&fit=crop" alt="CozyCare UI">
-            </div>
-            <div class="gallery-info"><h2>CozyCare</h2></div>
-        </div>
-        <div class="gallery-item">
-            <div class="gallery-image-wrapper js-scroll-wave">
-                <img src="https://images.unsplash.com/photo-1556910103-1c02745aae4d?q=80&w=1600&auto=format&fit=crop" alt="Topfgeflüster App">
-            </div>
-            <div class="gallery-info"><h2>Topfgeflüster</h2></div>
-        </div>
-        <div class="gallery-item">
-            <div class="gallery-image-wrapper js-scroll-wave">
-                <img src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=1600&auto=format&fit=crop" alt="PaceSpace Workspace">
-            </div>
-            <div class="gallery-info"><h2>PaceSpace</h2></div>
-        </div>
-    </div>
-
+    <canvas id="canvas"></canvas>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-
     <script>
-        const container = document.getElementById('webgl-container');
         const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 0.1, 100);
-        camera.position.z = 12; // Etwas weiter weg, damit das Karussell gut wirkt
-
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 100);
+        camera.position.z = 10;
+        const renderer = new THREE.WebGLRenderer({ canvas: document.querySelector('#canvas'), antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        container.appendChild(renderer.domElement);
 
-        // --- 3D SCHERBEN GENERATOR ---
-        // Baut statt flacher Dreiecke echte 3D-Prismen (Scherben mit Dicke)
-        const cols = 25;
-        const rows = 15;
-        const radius = 4;
-        const arcAngle = Math.PI / 1.5; // Wie stark das Karussell gebogen ist
-        const thickness = 0.15; // Die Dicke der Glasscherben
-        
+        // 1. Instanziierte Geometrie (Die Scherben)
+        const count = 2000;
+        const geometry = new THREE.BoxGeometry(0.15, 0.15, 0.05); // Die "Dicke" des Glases
+        const material = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.6, roughness: 0.1 });
+        const mesh = new THREE.InstancedMesh(geometry, material, count);
+
+        // 2. Initialisierung in Zylinder-Form
+        const dummy = new THREE.Object3D();
         const positions = [];
-        const flatPositions = [];
-        const uvs = [];
-        const normals = [];
-        const randoms = [];
-        const centers = [];
-        
-        const width = arcAngle * radius;
-        const height = 4;
-
-        function addVertex(x, y, z, fx, fy, fz, u, v, nx, ny, nz, cx, cy, cz, rx, ry, rz) {
-            positions.push(x, y, z);
-            flatPositions.push(fx, fy, fz);
-            uvs.push(u, v);
-            normals.push(nx, ny, nz);
-            centers.push(cx, cy, cz);
-            randoms.push(rx, ry, rz);
+        for(let i=0; i<count; i++) {
+            const angle = (i / count) * Math.PI * 1.5;
+            const x = Math.sin(angle) * 4;
+            const z = Math.cos(angle) * 4 - 4;
+            dummy.position.set(x, (Math.random()-0.5)*4, z);
+            dummy.rotation.y = angle;
+            dummy.updateMatrix();
+            mesh.setMatrixAt(i, dummy.matrix);
+            positions.push(new THREE.Vector3(x, 0, z)); // Save start pos
         }
-
-        // Berechnet die Zylinder-Koordinaten
-        function getCurved(px, py) {
-            const angle = (px / width) * arcAngle - (arcAngle / 2);
-            return {
-                x: Math.sin(angle) * radius,
-                y: py,
-                z: Math.cos(angle) * radius - radius // Zentrum bei Z=0
-            };
-        }
-
-        for (let i = 0; i < cols; i++) {
-            for (let j = 0; j < rows; j++) {
-                // Ecken eines Rechtecks auf dem Raster
-                const x1 = (i / cols) * width - width / 2;
-                const x2 = ((i + 1) / cols) * width - width / 2;
-                const y1 = (j / rows) * height - height / 2;
-                const y2 = ((j + 1) / rows) * height - height / 2;
-
-                const u1 = i / cols, u2 = (i + 1) / cols;
-                const v1 = j / rows, v2 = (j + 1) / rows;
-
-                // Splitter driften massiv nach links oder rechts (X-Achse), je nachdem wo sie sind
-                const dirX = (x1 < 0 ? -1 : 1) * (Math.random() * 8 + 4); 
-                const dirY = (Math.random() - 0.5) * 6;
-                const dirZ = (Math.random() - 0.5) * 6;
-
-                // Ein Quadrat wird in 2 Dreiecke geteilt. 
-                // Für jedes Dreieck bauen wir einen 3D-Körper (Prisma)
-                const buildShard = (p1, p2, p3, uvA, uvB, uvC) => {
-                    const c1 = getCurved(p1.x, p1.y);
-                    const c2 = getCurved(p2.x, p2.y);
-                    const c3 = getCurved(p3.x, p3.y);
-
-                    // Zentrum des Splitters
-                    const cx = (c1.x + c2.x + c3.x) / 3;
-                    const cy = (c1.y + c2.y + c3.y) / 3;
-                    const cz = (c1.z + c2.z + c3.z) / 3;
-
-                    // Front-Geometrie (Curved & Flat)
-                    const frontN = [0, 0, 1];
-                    addVertex(c1.x, c1.y, c1.z, p1.x, p1.y, 0, uvA.u, uvA.v, ...frontN, cx, cy, cz, dirX, dirY, dirZ);
-                    addVertex(c2.x, c2.y, c2.z, p2.x, p2.y, 0, uvB.u, uvB.v, ...frontN, cx, cy, cz, dirX, dirY, dirZ);
-                    addVertex(c3.x, c3.y, c3.z, p3.x, p3.y, 0, uvC.u, uvC.v, ...frontN, cx, cy, cz, dirX, dirY, dirZ);
-
-                    // Back-Geometrie (Nach hinten verschoben)
-                    const backN = [0, 0, -1];
-                    // Reihenfolge umdrehen für Backface Culling
-                    addVertex(c3.x, c3.y, c3.z - thickness, p3.x, p3.y, -thickness, uvC.u, uvC.v, ...backN, cx, cy, cz, dirX, dirY, dirZ);
-                    addVertex(c2.x, c2.y, c2.z - thickness, p2.x, p2.y, -thickness, uvB.u, uvB.v, ...backN, cx, cy, cz, dirX, dirY, dirZ);
-                    addVertex(c1.x, c1.y, c1.z - thickness, p1.x, p1.y, -thickness, uvA.u, uvA.v, ...backN, cx, cy, cz, dirX, dirY, dirZ);
-
-                    // (Um Code-Masse zu sparen, lassen wir die schmalen Seitenflächen weg. 
-                    // Durch die Beleuchtung auf Front und Back sieht es trotzdem wie 3D-Splitter aus.)
-                };
-
-                // Dreieck 1
-                buildShard(
-                    {x: x1, y: y1}, {x: x2, y: y1}, {x: x1, y: y2},
-                    {u: u1, v: v1}, {u: u2, v: v1}, {u: u1, v: v2}
-                );
-                // Dreieck 2
-                buildShard(
-                    {x: x2, y: y1}, {x: x2, y: y2}, {x: x1, y: y2},
-                    {u: u2, v: v1}, {u: u2, v: v2}, {u: u1, v: v2}
-                );
-            }
-        }
-
-        const geometry = new THREE.BufferGeometry();
-        geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-        geometry.setAttribute('aFlatPosition', new THREE.Float32BufferAttribute(flatPositions, 3));
-        geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
-        geometry.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
-        geometry.setAttribute('aCenter', new THREE.Float32BufferAttribute(centers, 3));
-        geometry.setAttribute('aRandom', new THREE.Float32BufferAttribute(randoms, 3));
-
-        const texture = new THREE.TextureLoader().load('https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=1600&auto=format&fit=crop');
-
-        // Der Shader steuert Morphing, Zersplitterung und rudimentäres 3D-Licht
-        const material = new THREE.ShaderMaterial({
-            uniforms: {
-                uTexture: { value: texture },
-                uFlatten: { value: 0.0 }, // 0 = Zylinder, 1 = Flach
-                uShatter: { value: 0.0 }  // 0 = Ganz, 1 = Zersplittert
-            },
-            vertexShader: `
-                uniform float uFlatten;
-                uniform float uShatter;
-                attribute vec3 aFlatPosition;
-                attribute vec3 aCenter;
-                attribute vec3 aRandom;
-                varying vec2 vUv;
-                varying vec3 vNormal;
-
-                mat4 rotationMatrix(vec3 axis, float angle) {
-                    axis = normalize(axis);
-                    float s = sin(angle); float c = cos(angle); float oc = 1.0 - c;
-                    return mat4(oc * axis.x * axis.x + c, oc * axis.x * axis.y - axis.z * s, oc * axis.z * axis.x + axis.y * s, 0.0,
-                                oc * axis.x * axis.y + axis.z * s, oc * axis.y * axis.y + c, oc * axis.y * axis.z - axis.x * s, 0.0,
-                                oc * axis.z * axis.x - axis.y * s, oc * axis.y * axis.z + axis.x * s, oc * axis.z * axis.z + c, 0.0,
-                                0.0, 0.0, 0.0, 1.0);
-                }
-
-                void main() {
-                    vUv = uv;
-                    
-                    // 1. Morph von Gebogen zu Flach
-                    vec3 morphedPos = mix(position, aFlatPosition, uFlatten);
-                    vec3 morphedCenter = mix(aCenter, vec3(aCenter.x, aCenter.y, 0.0), uFlatten);
-
-                    // 2. Shatter Effekt
-                    vec3 axis = normalize(aRandom);
-                    float angle = uShatter * 3.14 * 1.5; 
-                    mat4 rot = rotationMatrix(axis, angle);
-
-                    vec3 pos = morphedPos - morphedCenter;
-                    pos = (rot * vec4(pos, 1.0)).xyz;
-                    pos += morphedCenter;
-
-                    // Fliegt massiv weg (aRandom hat starke X-Werte)
-                    pos += aRandom * uShatter;
-
-                    // Normalen drehen für die Lichtberechnung im Fragment Shader
-                    vNormal = (rot * vec4(normal, 0.0)).xyz;
-
-                    gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
-                }
-            `,
-            fragmentShader: `
-                uniform sampler2D uTexture;
-                uniform float uShatter;
-                varying vec2 vUv;
-                varying vec3 vNormal;
-
-                void main() {
-                    vec4 texColor = texture2D(uTexture, vUv);
-                    
-                    // Simples 3D-Licht (Directional), damit die Scherben Plastizität bekommen
-                    vec3 lightDir = normalize(vec3(1.0, 1.0, 1.0));
-                    float diff = max(dot(normalize(vNormal), lightDir), 0.3); // Mindestens 30% Helligkeit
-                    
-                    vec3 finalColor = texColor.rgb * diff;
-                    
-                    // Transparenz beim Wegfliegen
-                    float alpha = 1.0 - (uShatter * 0.7); 
-                    
-                    gl_FragColor = vec4(finalColor, alpha);
-                }
-            `,
-            transparent: true,
-            side: THREE.DoubleSide
-        });
-
-        const mesh = new THREE.Mesh(geometry, material);
         scene.add(mesh);
 
-        // --- RAYCASTER (Interaktion mit dem Bild selbst) ---
-        const raycaster = new THREE.Raycaster();
-        const mouse = new THREE.Vector2();
-        let isAnimated = false;
+        // 3. Licht für den Aikawa-Glanz (Essential für Glas-Look)
+        scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+        const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+        dirLight.position.set(5, 5, 5);
+        scene.add(dirLight);
 
-        window.addEventListener('mousemove', (event) => {
-            if(isAnimated) return;
-            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-            raycaster.setFromCamera(mouse, camera);
-            const intersects = raycaster.intersectObject(mesh);
-            
-            // Cursor ändert sich, wenn man über das Bild fährt
-            document.body.style.cursor = intersects.length > 0 ? 'pointer' : 'default';
-        });
-
+        // 4. Interaktions-Logik (Klick auf Bild / Mesh)
+        let shattered = false;
         window.addEventListener('click', () => {
-            if (isAnimated) return;
-            raycaster.setFromCamera(mouse, camera);
-            const intersects = raycaster.intersectObject(mesh);
-            
-            // Nur ausführen, wenn auch das Bild angeklickt wurde
-            if (intersects.length > 0) {
-                isAnimated = true;
-                document.body.style.cursor = 'default';
-                document.getElementById('instruction').style.opacity = 0;
-
-                const tl = gsap.timeline();
-
-                // 1. Zylinder wird flach (Morphing)
-                tl.to(material.uniforms.uFlatten, {
-                    value: 1.0,
-                    duration: 0.8,
-                    ease: "power2.inOut"
-                })
-                // 2. Kurz darauf: Zersplittern (Shatter) + Typografie + Galerie
-                .to(material.uniforms.uShatter, {
-                    value: 1.0,
-                    duration: 2.5,
-                    ease: "power3.out"
-                }, "+=0.1")
-                .to(document.getElementById('main-title'), {
-                    scale: 0.6, // In deinem Video wird der Text eher kleiner/anders formatiert. Wir skalieren ihn hier als Effekt.
-                    letterSpacing: "0.1em",
-                    color: "rgba(0,0,0,0.1)",
-                    duration: 2.0,
-                    ease: "power2.out",
-                    onStart: () => {
-                        setTimeout(() => { document.getElementById('main-title').innerText = "WORK"; }, 200);
-                    }
-                }, "<")
-                .call(() => {
-                    document.body.style.overflowY = 'auto';
-                    document.getElementById('gallery').style.display = 'flex';
-                }, [], "-=1.5");
-            }
+            shattered = !shattered;
         });
-
-        // --- RENDER LOOP & SCROLL EFFEKT ---
-        const waveElements = document.querySelectorAll('.js-scroll-wave');
-        let lastScrollY = window.scrollY;
-        let scrollVelocity = 0;
 
         function animate() {
             requestAnimationFrame(animate);
+            for(let i=0; i<count; i++) {
+                mesh.getMatrixAt(i, dummy.matrix);
+                dummy.matrix.decompose(dummy.position, dummy.rotation, dummy.scale);
+                
+                // Physik-Logik: Interpolation zum Scherben-Zustand
+                if(shattered) {
+                    dummy.position.x += (Math.random()-0.5) * 0.1;
+                    dummy.position.z += (Math.random()-0.5) * 0.1;
+                }
+                
+                dummy.updateMatrix();
+                mesh.setMatrixAt(i, dummy.matrix);
+            }
+            mesh.instanceMatrix.needsUpdate = true;
             renderer.render(scene, camera);
-
-            // Scroll Wellen-Effekt für die Galerie
-            const currentScrollY = window.scrollY;
-            const deltaY = currentScrollY - lastScrollY;
-            lastScrollY = currentScrollY;
-
-            scrollVelocity += (deltaY - scrollVelocity) * 0.1;
-            let tiltX = scrollVelocity * 0.4;
-            tiltX = Math.max(-12, Math.min(12, tiltX));
-
-            waveElements.forEach(el => {
-                el.style.transform = `rotateX(${-tiltX}deg) translateY(${tiltX * 1.5}px)`;
-            });
         }
         animate();
-
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
     </script>
 </body>
 </html>
