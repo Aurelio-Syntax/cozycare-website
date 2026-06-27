@@ -271,7 +271,7 @@ canvas.height = window.innerHeight;
 const renderer = new THREE.WebGLRenderer({
   canvas,
   antialias: true,
-  alpha: false,          // solid — no transparency issues
+  alpha: true,          // solid — no transparency issues
 });
 renderer.setClearColor(0xffffff, 1);   // white background
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -596,6 +596,7 @@ detail.addEventListener('scroll',()=>{
 // ════════════════════════════════════════
 function render(){
   requestAnimationFrame(render);
+  if (panoTex) panoTex.needsUpdate = true;
   rotY=lerp(rotY,targetY,.07);
   cylGroup.rotation.y=rotY;
 
